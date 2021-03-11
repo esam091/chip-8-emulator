@@ -22,7 +22,7 @@ fn main() -> Result<(), String> {
 
   // TODO: handle odd number of bytes
   let u16_vec: Vec<u16> = bytes.chunks_exact(2)
-    .map(|a| u16::from_ne_bytes([a[0], a[1]]))
+    .map(|a| u16::from_be_bytes([a[0], a[1]]))
     .collect();
 
   println!("{:04x?}", u16_vec);
