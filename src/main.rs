@@ -5,8 +5,10 @@ enum OpCodes {
 
 }
 
-fn bytes_to_opcodes(bytes: Vec<u8>) {
+fn bytes_to_opcodes(bytes: Vec<u8>) -> Vec<OpCodes> {
+  let mut opcodes = Vec::new();
 
+  opcodes
 }
 
 fn main() -> Result<(), String> {
