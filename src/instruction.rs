@@ -8,33 +8,11 @@ pub enum Instruction {
     // 00EE,
     ReturnFromSubroutine,
 
-    // 2NNN,
-    CallSubroutineAtAddress(u16),
-
-    // ANNN
-    StoreAddrToI(u16),
-
-    // 6XNN
-    SetV {
-        register: u8,
-        value: u8,
-    },
-
-    // DXYN
-    Draw {
-        register_x: u8,
-        register_y: u8,
-        bytes: u8,
-    },
-
-    // 7XNN
-    AddToRegister {
-        register: u8,
-        value: u8,
-    },
-
     // 1NNN
     JumpToAddress(u16),
+
+    // 2NNN,
+    CallSubroutineAtAddress(u16),
 
     // 3XNN
     SkipIfEqual {
@@ -48,10 +26,32 @@ pub enum Instruction {
         value: u8,
     },
 
+    // 6XNN
+    SetV {
+        register: u8,
+        value: u8,
+    },
+
+    // 7XNN
+    AddToRegister {
+        register: u8,
+        value: u8,
+    },
+
     // 8XY0
     StoreYToX {
         register_x: u8,
         register_y: u8,
+    },
+
+    // ANNN
+    StoreAddrToI(u16),
+
+    // DXYN
+    Draw {
+        register_x: u8,
+        register_y: u8,
+        bytes: u8,
     },
 
     // FX1E
