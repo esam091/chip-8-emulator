@@ -28,7 +28,7 @@ enum OpCode {
   ExecuteSubroutine(u16),
 
   // 8XY0
-    StoreYToX { register_x: u8, register_y: u8 }
+  StoreYToX { register_x: u8, register_y: u8 }
 }
 
 fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
