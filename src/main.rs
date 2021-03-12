@@ -63,22 +63,22 @@ fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
     );
 }
 
-fn combine2(a: u8, b: u8) -> u16 {
+fn combine_nibble2(a: u8, b: u8) -> u16 {
     (a as u16) << 4 ^ (b as u16)
 }
 
-fn combine3(a: u8, b: u8, c: u8) -> u16 {
+fn combine_nibble3(a: u8, b: u8, c: u8) -> u16 {
     ((a as u16) << 8) ^ ((b as u16) << 4) ^ c as u16
 }
 
 fn instruction_to_opcode(instruction: u16) -> OpCode {
     match split_instruction(instruction) {
         (0x0, 0x0, 0xe, 0x0) => OpCode::ClearScreen,
-        (0x0, a, b, c) => OpCode::ExecuteSubroutine(combine3(a, b, c)),
-        (0xa, a, b, c) => OpCode::StoreAddrToI(combine3(a, b, c)),
+        (0x0, a, b, c) => OpCode::ExecuteSubroutine(combine_nibble3(a, b, c)),
+        (0xa, a, b, c) => OpCode::StoreAddrToI(combine_nibble3(a, b, c)),
         (0x6, register, a, b) => OpCode::SetV {
             register,
-            value: combine2(a, b),
+            value: combine_nibble2(a, b),
         },
         (0xd, register_x, register_y, bytes) => OpCode::Draw {
             register_x,
@@ -87,12 +87,12 @@ fn instruction_to_opcode(instruction: u16) -> OpCode {
         },
         (0x7, register, a, b) => OpCode::AddToRegister {
             register,
-            value: combine2(a, b),
+            value: combine_nibble2(a, b),
         },
-        (0x1, a, b, c) => OpCode::JumpToAddress(combine3(a, b, c)),
+        (0x1, a, b, c) => OpCode::JumpToAddress(combine_nibble3(a, b, c)),
         (0x3, register, a, b) => OpCode::SkipIfEqual {
             register,
-            value: combine2(a, b),
+            value: combine_nibble2(a, b),
         },
         (0x8, register_x, register_y, 0) => OpCode::StoreYToX {
             register_x,
@@ -118,7 +118,7 @@ enum UIAction {
 
 struct Program {
     memory: [u8; 4096],
-    program_counter: u8,
+    program_counter: usize,
     
 }
 
@@ -139,11 +139,22 @@ impl Program {
         })
     }
 
-    // fn step(self) -> Option<UIAction> {
-    //     let a = self.memory.index(self.program_counter)
-    //     let b  = self.memory[self.program_counter + 1];
-    //     None
-    // }
+    fn step(&mut self) -> Option<UIAction> {
+        let a = self.memory[self.program_counter];
+        let b  = self.memory[self.program_counter + 1];
+
+        let instruction = ((a as u16) << 8) | b as u16;
+
+        let opcode = instruction_to_opcode(instruction);
+
+        match opcode {
+            OpCode::ClearScreen =>  {
+                self.program_counter += 2;
+                return Some(UIAction::ClearScreen)
+            },
+            _ => return None
+        }
+    }
 }
 
 fn main() -> Result<(), String> {
@@ -171,11 +182,10 @@ fn main() -> Result<(), String> {
     canvas.clear();
     canvas.present();
     let mut event_pump = sdl_context.event_pump().unwrap();
-    let mut i = 0;
+    
+    // let aa = &mut program;
+
     'running: loop {
-        i = (i + 1) % 255;
-        canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
-        canvas.clear();
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
@@ -190,12 +200,17 @@ fn main() -> Result<(), String> {
                 _ => {}
             }
         }
-        // The rest of the game loop goes here...
+        
+        if let Some(ui_action) = program.step() {
+            match ui_action {
+                UIAction::ClearScreen => {
+                    canvas.set_draw_color(Color::RGB(0, 0, 0));
+                    canvas.clear();
+                },
+            }
+        }
 
-        // canvas.set_draw_color(Color::RGB(255, 255, 255));
-
-        // canvas.fill_rect(Rect::new(x, y, 20, 20)).unwrap();
-        // canvas.present();
+        canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 
