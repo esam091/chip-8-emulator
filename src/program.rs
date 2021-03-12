@@ -47,13 +47,13 @@ impl Machine {
         let a = self.memory[self.program_counter];
         let b = self.memory[self.program_counter + 1];
 
-        let instruction = ((a as u16) << 8) | b as u16;
+        let opcode = ((a as u16) << 8) | b as u16;
 
-        let opcode = parse_opcode(instruction);
+        let instruction = parse_opcode(opcode);
         self.program_counter += 2;
-        println!("instruction: {:#04x?}, opcode {:02x?}", instruction, opcode);
+        println!("instruction: {:#04x?}, opcode {:02x?}", opcode, instruction);
 
-        if let Some(opcode) = opcode {
+        if let Some(opcode) = instruction {
             match opcode {
                 Instruction::ClearScreen => {
                     self.pixel_buffer = [[false; 64]; 32];
@@ -139,7 +139,7 @@ impl Machine {
                 _ => return None,
             } 
         } else {
-            panic!("Failed to translate opcode: {:#02x?}, either the opcode is not supported yet, or there is a bug in the interpreter", instruction);
+            panic!("Failed to translate opcode: {:#02x?}, either the opcode is not supported yet, or there is a bug in the interpreter", opcode);
         }
 
         return None;
