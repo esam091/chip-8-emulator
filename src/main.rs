@@ -5,6 +5,7 @@ use std::env;
 enum OpCode {
   ClearScreen,
   StoreAddrToI(u16),
+  SetV { register: u8, value: u16 },
 }
 
 fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
@@ -21,10 +22,19 @@ fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
   );
 }
 
+fn combine2(a: u8, b: u8) -> u16 {
+  (a as u16) << 4 ^ (b as u16)
+}
+
+fn combine3(a: u8, b: u8, c: u8) -> u16 {
+  ((a as u16) << 8) ^ ((b as u16) << 4) ^ c as u16
+}
+
 fn instruction_to_opcode(instruction: u16) -> OpCode {
   match split_instruction(instruction) {
     (0x0, 0x0, 0xe, 0x0) => OpCode::ClearScreen,
-    (0xa, a, b, c) => OpCode::StoreAddrToI(((a as u16) << 8) ^ ((b as u16) << 4) ^ c as u16),
+    (0xa, a, b, c) => OpCode::StoreAddrToI(combine3(a, b, c)),
+    (0x6, register, a, b) => OpCode::SetV { register, value: combine2(a, b) },
     _ => panic!("Unhandled instruction: {:#04x?}", instruction)
   }
 }
@@ -73,5 +83,6 @@ mod tests {
   fn opcode_test() {
     assert_eq!(instruction_to_opcode(0x00e0), OpCode::ClearScreen);
     assert_eq!(instruction_to_opcode(0xa22a), OpCode::StoreAddrToI(0x22a));
+    assert_eq!(instruction_to_opcode(0x600c), OpCode::SetV { register: 0, value: 0x0c });
   }
 }
