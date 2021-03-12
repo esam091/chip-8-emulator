@@ -1,7 +1,7 @@
 use std::{convert::TryInto, fs, time::Duration};
 use std::env;
 
-use sdl2::{event::Event, keyboard::Keycode, pixels::Color};
+use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
 #[derive(Debug, PartialEq, Eq)]
 enum OpCode {
@@ -130,6 +130,9 @@ fn main() -> Result<(), String> {
         }
         // The rest of the game loop goes here...
 
+        canvas.set_draw_color(Color::RGB(255, 255, 255));
+
+        canvas.fill_rect(Rect::new(0, 0, 20, 20)).unwrap();
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
