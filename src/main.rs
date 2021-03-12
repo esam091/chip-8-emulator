@@ -132,6 +132,9 @@ fn main() -> Result<(), String> {
 
     // // println!("{:04x?}", opcodes);
 
+    let mut x = 0;
+    let mut y = 0;
+
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
 
@@ -159,6 +162,10 @@ fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
+                Event::KeyDown {
+                    keycode: Some(Keycode::Right),
+                    ..
+                } => x += 10,
                 _ => {}
             }
         }
@@ -166,7 +173,7 @@ fn main() -> Result<(), String> {
 
         canvas.set_draw_color(Color::RGB(255, 255, 255));
 
-        canvas.fill_rect(Rect::new(0, 0, 20, 20)).unwrap();
+        canvas.fill_rect(Rect::new(x, y, 20, 20)).unwrap();
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
