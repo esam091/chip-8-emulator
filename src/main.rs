@@ -3,7 +3,7 @@ use std::{convert::TryInto, fs, time::Duration};
 
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 enum OpCode {
     // 00E0
     ClearScreen,
@@ -71,46 +71,46 @@ fn combine_nibble3(a: u8, b: u8, c: u8) -> u16 {
     ((a as u16) << 8) ^ ((b as u16) << 4) ^ c as u16
 }
 
-fn instruction_to_opcode(instruction: u16) -> OpCode {
+fn instruction_to_opcode(instruction: u16) -> Option<OpCode> {
     match split_instruction(instruction) {
-        (0x0, 0x0, 0xe, 0x0) => OpCode::ClearScreen,
-        (0x0, a, b, c) => OpCode::ExecuteSubroutine(combine_nibble3(a, b, c)),
-        (0xa, a, b, c) => OpCode::StoreAddrToI(combine_nibble3(a, b, c)),
-        (0x6, register, a, b) => OpCode::SetV {
+        (0x0, 0x0, 0xe, 0x0) => Some(OpCode::ClearScreen),
+        (0x0, a, b, c) => Some(OpCode::ExecuteSubroutine(combine_nibble3(a, b, c))),
+        (0xa, a, b, c) => Some(OpCode::StoreAddrToI(combine_nibble3(a, b, c))),
+        (0x6, register, a, b) => Some(OpCode::SetV {
             register,
             value: combine_nibble2(a, b),
-        },
-        (0xd, register_x, register_y, bytes) => OpCode::Draw {
+        }),
+        (0xd, register_x, register_y, bytes) => Some(OpCode::Draw {
             register_x,
             register_y,
             bytes,
-        },
-        (0x7, register, a, b) => OpCode::AddToRegister {
+        }),
+        (0x7, register, a, b) => Some(OpCode::AddToRegister {
             register,
             value: combine_nibble2(a, b),
-        },
-        (0x1, a, b, c) => OpCode::JumpToAddress(combine_nibble3(a, b, c)),
-        (0x3, register, a, b) => OpCode::SkipIfEqual {
+        }),
+        (0x1, a, b, c) => Some(OpCode::JumpToAddress(combine_nibble3(a, b, c))),
+        (0x3, register, a, b) => Some(OpCode::SkipIfEqual {
             register,
             value: combine_nibble2(a, b),
-        },
-        (0x8, register_x, register_y, 0) => OpCode::StoreYToX {
+        }),
+        (0x8, register_x, register_y, 0) => Some(OpCode::StoreYToX {
             register_x,
             register_y,
-        },
-        _ => panic!("Unhandled instruction: {:#04x?}", instruction),
+        }),
+        _ => None,
     }
 }
 
-fn instructions_to_opcodes(instructions: Vec<u16>) -> Vec<OpCode> {
-    let mut opcodes = Vec::new();
+// fn instructions_to_opcodes(instructions: Vec<u16>) -> Vec<OpCode> {
+//     let mut opcodes = Vec::new();
 
-    for instruction in instructions {
-        opcodes.push(instruction_to_opcode(instruction));
-    }
+//     for instruction in instructions {
+//         opcodes.push(instruction_to_opcode(instruction));
+//     }
 
-    opcodes
-}
+//     opcodes
+// }
 
 enum UIAction {
     ClearScreen
@@ -154,13 +154,17 @@ impl Program {
 
         let opcode = instruction_to_opcode(instruction);
 
-        match opcode {
-            OpCode::ClearScreen =>  {
-                self.program_counter += 2;
-                return Some(UIAction::ClearScreen)
-            },
-            _ => return None
+        if let Some(opcode) = opcode {
+            match opcode {
+                OpCode::ClearScreen =>  {
+                    self.program_counter += 2;
+                    return Some(UIAction::ClearScreen)
+                },
+                _ => return None
+            }
         }
+
+        return None        
     }
 }
 
@@ -278,7 +282,7 @@ mod tests {
         for (instruction, opcode) in instructions_and_opcodes {
             assert_eq!(
                 instruction_to_opcode(instruction),
-                opcode,
+                Some(opcode),
                 "Expecting instruction {:#04x?} to translate to opcode {:#04x?}",
                 instruction,
                 opcode
