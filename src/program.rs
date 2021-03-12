@@ -129,6 +129,14 @@ impl Machine {
                 return None;
             }
 
+            Instruction::SkipIfNotEqual { register, value } => {
+                if self.registers[register as usize] != value {
+                    self.program_counter += 2;
+                }
+
+                return None;
+            }
+
             _ => return None,
         }
     }
@@ -144,7 +152,7 @@ impl Machine {
         println!("instruction: {:#04x?}, opcode {:02x?}", opcode, instruction);
 
         return instruction
-            .map(|instruction| self.handle_instruction(instruction))
-            .expect(format!("Failed to translate opcode: {:#02x?}, either the opcode is not supported yet, or there is a bug in the interpreter", opcode).into());
+            .map(move |instruction| self.handle_instruction(instruction))
+            .expect(format!("Failed to translate opcode: {:#02x?}, either the opcode is not supported yet, or there is a bug in the interpreter", opcode).as_str());
     }
 }
