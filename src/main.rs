@@ -265,7 +265,7 @@ fn main() -> Result<(), String> {
     let video_subsystem = sdl_context.video().unwrap();
 
     let window = video_subsystem
-        .window("rust-sdl2 demo", 640, 320)
+        .window("CHIP-8 Emulator", 640, 320)
         .position_centered()
         .build()
         .unwrap();
