@@ -27,7 +27,7 @@ enum OpCode {
     // 7XNN
     AddToRegister {
         register: u8,
-        value: u16,
+        value: u8,
     },
 
     // 1NNN
@@ -91,7 +91,7 @@ fn instruction_to_opcode(instruction: u16) -> Option<OpCode> {
         }),
         (0x7, register, a, b) => Some(OpCode::AddToRegister {
             register,
-            value: combine_nibble2(a, b),
+            value: combine_nibble2t(a, b),
         }),
         (0x1, a, b, c) => Some(OpCode::JumpToAddress(combine_nibble3(a, b, c))),
         (0x3, register, a, b) => Some(OpCode::SkipIfEqual {
@@ -159,6 +159,8 @@ impl Program {
         let opcode = instruction_to_opcode(instruction);
 
         if let Some(opcode) = opcode {
+            println!("opcode {:?}", opcode);
+
             match opcode {
                 OpCode::ClearScreen =>  {
                     self.pixel_buffer = [[false; 64]; 32];
@@ -186,6 +188,8 @@ impl Program {
                     let x = self.registers[register_x as usize] % 64;
                     let mut y = self.registers[register_y as usize] % 32;
 
+                    println!("start drawing at {}, {}", x, y);
+
                     // try using self.vf to simplify the code
                     self.registers[0xf] = 0;
 
@@ -212,6 +216,7 @@ impl Program {
                                     self.pixel_buffer[y as usize][current_x as usize] = false;
                                     self.registers[0xf] = 1;
                                 } else {
+                                    println!("turn on at {}, {}", current_x, y);
                                     self.pixel_buffer[y as usize][current_x as usize] = true;
                                 }
                             }
@@ -223,9 +228,18 @@ impl Program {
                     }
 
                     self.program_counter += 2;
+                },
+
+                OpCode::AddToRegister { register, value } => {
+                    self.registers[register as usize] += value;
+                    self.program_counter += 2;
+                },
+
+                OpCode::JumpToAddress(address) => {
+                    self.program_counter = address as usize;
                 }
 
-                _ => return None
+                _ => return Some(UIAction::Draw(&self.pixel_buffer))
             }
         }
 
@@ -302,7 +316,8 @@ fn main() -> Result<(), String> {
         }
 
         canvas.present();
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        // ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        ::std::thread::sleep(Duration::new(1, 0));
     }
 
     Ok(())
