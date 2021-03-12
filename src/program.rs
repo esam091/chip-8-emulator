@@ -192,7 +192,7 @@ impl Machine {
                 return None;
             }
             Instruction::XorRegisters { register_x, register_y } => {
-                self.registers[register_x as usize] ^= self.registers[register_y as usize];
+                self.registers[register_x as usize] |= self.registers[register_y as usize];
 
                 return None;
             }
