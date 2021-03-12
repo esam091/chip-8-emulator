@@ -8,7 +8,7 @@ pub const NUM_ROWS: usize = 32;
 pub const NUM_COLS: usize = 64;
 
 const MEMORY_SIZE: usize = 4096;
-const PROGRAM_STARTING_ADDRESS: usize = 512;
+const PROGRAM_STARTING_ADDRESS: u16 = 512;
 
 pub enum UIAction<'a> {
     ClearScreen,
@@ -17,11 +17,12 @@ pub enum UIAction<'a> {
 
 pub struct Machine {
     memory: [u8; MEMORY_SIZE],
-    program_counter: usize,
+    program_counter: u16,
 
     registers: [u8; 16],
     i: u16,
     pixel_buffer: [[bool; NUM_COLS as usize]; NUM_ROWS as usize],
+    stack: Vec<u16>,
 }
 
 impl Machine {
@@ -31,7 +32,7 @@ impl Machine {
         let mut memory = [0 as u8; MEMORY_SIZE];
 
         for index in 0..bytes.len() {
-            memory[PROGRAM_STARTING_ADDRESS + index] = bytes[index];
+            memory[PROGRAM_STARTING_ADDRESS as usize + index] = bytes[index];
         }
 
         Ok(Machine {
@@ -40,6 +41,7 @@ impl Machine {
             registers: [0; 16],
             i: 0,
             pixel_buffer: [[false; NUM_COLS]; NUM_ROWS],
+            stack: Vec::new(),
         })
     }
 
@@ -125,7 +127,7 @@ impl Machine {
             }
 
             Instruction::JumpToAddress(address) => {
-                self.program_counter = address as usize;
+                self.program_counter = address;
                 return None;
             }
 
@@ -140,6 +142,12 @@ impl Machine {
             Instruction::AddRegisterToI(register) => {
                 self.i += self.registers[register as usize] as u16;
                 return None;
+            },
+
+            Instruction::CallSubroutineAtAddress(address) => {
+                self.stack.push(self.program_counter);
+                self.program_counter = address;
+                return None;
             }
 
             _ => panic!("Unhandled instruction: {:#04x?}", instruction),
@@ -147,8 +155,8 @@ impl Machine {
     }
 
     pub fn step(&mut self) -> Option<UIAction> {
-        let a = self.memory[self.program_counter];
-        let b = self.memory[self.program_counter + 1];
+        let a = self.memory[self.program_counter as usize];
+        let b = self.memory[self.program_counter as usize + 1];
 
         let opcode = ((a as u16) << 8) | b as u16;
 
