@@ -122,8 +122,9 @@ impl Machine {
             }
 
             Instruction::AddToRegister { register, value } => {
-                self.registers[register as usize] = self.registers[register as usize].wrapping_add(value);
-                
+                self.registers[register as usize] =
+                    self.registers[register as usize].wrapping_add(value);
+
                 return None;
             }
 
@@ -143,7 +144,7 @@ impl Machine {
             Instruction::AddRegisterToI(register) => {
                 self.i += self.registers[register as usize] as u16;
                 return None;
-            },
+            }
 
             Instruction::CallSubroutineAtAddress(address) => {
                 self.stack.push(self.program_counter);
@@ -152,7 +153,10 @@ impl Machine {
             }
 
             Instruction::ReturnFromSubroutine => {
-                let return_address = self.stack.pop().expect("Returning from subroutine, but the stack is empty");
+                let return_address = self
+                    .stack
+                    .pop()
+                    .expect("Returning from subroutine, but the stack is empty");
                 self.program_counter = return_address;
                 return None;
             }
@@ -162,9 +166,19 @@ impl Machine {
                 }
 
                 return None;
-            },
-            Instruction::StoreYToX { register_x, register_y } => {
+            }
+            Instruction::StoreYToX {
+                register_x,
+                register_y,
+            } => {
                 self.registers[register_x as usize] = self.registers[register_y as usize];
+                return None;
+            }
+
+            Instruction::SetRandomNumber { register, mask } => {
+                let value = fastrand::u8(..) & mask;
+                self.registers[register as usize] = value;
+
                 return None;
             }
         }
@@ -178,7 +192,7 @@ impl Machine {
 
         let instruction = parse_opcode(opcode);
         self.program_counter += 2;
-        // println!("instruction: {:#04x?}, opcode {:02x?}", opcode, instruction);
+        println!("instruction: {:#04x?}, opcode {:02x?}", opcode, instruction);
 
         return instruction
             .map(move |instruction| self.handle_instruction(instruction))

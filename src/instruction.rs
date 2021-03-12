@@ -60,6 +60,14 @@ pub enum Instruction {
     // ANNN
     StoreAddrToI(u16),
 
+    // BNNN
+
+    // CXNN
+    SetRandomNumber {
+        register: u8,
+        mask: u8,
+    },
+
     // DXYN
     Draw {
         register_x: u8,
@@ -77,7 +85,6 @@ pub enum Instruction {
 
     // FX1E
     AddRegisterToI(u8),
-
     // FX29
     // FX33
     // FX55
@@ -110,7 +117,9 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
     match split_opcode(instruction) {
         (0x0, 0x0, 0xe, 0x0) => Some(Instruction::ClearScreen),
         (0x0, 0x0, 0xe, 0xe) => Some(Instruction::ReturnFromSubroutine),
-        (0x2, a, b, c) => Some(Instruction::CallSubroutineAtAddress(combine_nibble3(a, b, c))),
+        (0x2, a, b, c) => Some(Instruction::CallSubroutineAtAddress(combine_nibble3(
+            a, b, c,
+        ))),
         (0xa, a, b, c) => Some(Instruction::StoreAddrToI(combine_nibble3(a, b, c))),
         (0x6, register, a, b) => Some(Instruction::SetV {
             register,
@@ -138,8 +147,9 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
             register_x,
             register_y,
         }),
+        (0xc, register, a, b) => Some(Instruction::SetRandomNumber { register, mask: combine_nibble2(a, b) }),
         (0xf, register, 0x1, 0xe) => Some(Instruction::AddRegisterToI(register)),
-        
+
         _ => None,
     }
 }
@@ -195,12 +205,16 @@ mod tests {
                     value: 0x40,
                 },
             ),
-            (
-                0xf21e,
-                Instruction::AddRegisterToI(2),
-            ),
+            (0xf21e, Instruction::AddRegisterToI(2)),
             (0x221a, Instruction::CallSubroutineAtAddress(0x21a)),
             (0x00ee, Instruction::ReturnFromSubroutine),
+            (
+                0xcc01,
+                Instruction::SetRandomNumber {
+                    register: 0xc,
+                    mask: 0x01,
+                },
+            ),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {
