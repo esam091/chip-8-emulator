@@ -215,6 +215,15 @@ impl Machine {
 
                 return None;
             }
+            Instruction::AddRegisters { register_x, register_y } => { 
+                let value_x = self.registers[register_x as usize];
+                let value_y = self.registers[register_y as usize];
+
+                self.registers[0xf] = if value_x.checked_add(value_y) == None { 1 } else { 0 };
+                self.registers[register_x as usize] = value_x.wrapping_add(value_y);
+                
+                return None;
+            }
         }
     }
 
