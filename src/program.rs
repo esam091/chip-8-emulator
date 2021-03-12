@@ -155,7 +155,17 @@ impl Machine {
                 self.program_counter = return_address;
                 return None;
             }
-            _ => panic!("Unhandled instruction: {:#04x?}", instruction),
+            Instruction::SkipIfEqual { register, value } => {
+                if self.registers[register as usize] == value {
+                    self.program_counter += 2;
+                }
+
+                return None;
+            },
+            Instruction::StoreYToX { register_x, register_y } => {
+                self.registers[register_x as usize] = self.registers[register_y as usize];
+                return None;
+            }
         }
     }
 

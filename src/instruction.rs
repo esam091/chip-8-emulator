@@ -48,9 +48,6 @@ pub enum Instruction {
         value: u8,
     },
 
-    // 0NNN
-    ExecuteSubroutine(u16),
-
     // 8XY0
     StoreYToX {
         register_x: u8,
@@ -87,7 +84,6 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
     match split_opcode(instruction) {
         (0x0, 0x0, 0xe, 0x0) => Some(Instruction::ClearScreen),
         (0x0, 0x0, 0xe, 0xe) => Some(Instruction::ReturnFromSubroutine),
-        (0x0, a, b, c) => Some(Instruction::ExecuteSubroutine(combine_nibble3(a, b, c))),
         (0x2, a, b, c) => Some(Instruction::CallSubroutineAtAddress(combine_nibble3(a, b, c))),
         (0xa, a, b, c) => Some(Instruction::StoreAddrToI(combine_nibble3(a, b, c))),
         (0x6, register, a, b) => Some(Instruction::SetV {
@@ -164,14 +160,6 @@ mod tests {
                 Instruction::SkipIfEqual {
                     register: 0xc,
                     value: 0x00,
-                },
-            ),
-            (0x0038, Instruction::ExecuteSubroutine(0x038)),
-            (
-                0x8320,
-                Instruction::StoreYToX {
-                    register_x: 3,
-                    register_y: 2,
                 },
             ),
             (
