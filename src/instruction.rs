@@ -36,6 +36,12 @@ pub enum Instruction {
         value: u8,
     },
 
+    // 4XNN
+    SkipIfNotEqual {
+        register: u8,
+        value: u8
+    },
+
     // 0NNN
     ExecuteSubroutine(u16),
 
@@ -90,6 +96,10 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
         (0x3, register, a, b) => Some(Instruction::SkipIfEqual {
             register,
             value: combine_nibble2(a, b),
+        }),
+        (0x4, register, a, b) => Some(Instruction::SkipIfNotEqual {
+            register,
+            value: combine_nibble2(a, b)
         }),
         (0x8, register_x, register_y, 0) => Some(Instruction::StoreYToX {
             register_x,
@@ -151,6 +161,7 @@ mod tests {
                     register_y: 2,
                 },
             ),
+            (0x4040, Instruction::SkipIfNotEqual { register: 0, value: 0x40 }),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {
