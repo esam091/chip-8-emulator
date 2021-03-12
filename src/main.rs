@@ -4,7 +4,7 @@ use std::{env, usize};
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
-enum OpCode {
+enum Instruction {
     // 00E0
     ClearScreen,
 
@@ -71,47 +71,36 @@ fn combine_nibble3(a: u8, b: u8, c: u8) -> u16 {
     ((a as u16) << 8) ^ ((b as u16) << 4) ^ c as u16
 }
 
-fn instruction_to_opcode(instruction: u16) -> Option<OpCode> {
+fn parse_opcode(instruction: u16) -> Option<Instruction> {
     match split_opcode(instruction) {
-        (0x0, 0x0, 0xe, 0x0) => Some(OpCode::ClearScreen),
-        (0x0, a, b, c) => Some(OpCode::ExecuteSubroutine(combine_nibble3(a, b, c))),
-        (0xa, a, b, c) => Some(OpCode::StoreAddrToI(combine_nibble3(a, b, c))),
-        (0x6, register, a, b) => Some(OpCode::SetV {
+        (0x0, 0x0, 0xe, 0x0) => Some(Instruction::ClearScreen),
+        (0x0, a, b, c) => Some(Instruction::ExecuteSubroutine(combine_nibble3(a, b, c))),
+        (0xa, a, b, c) => Some(Instruction::StoreAddrToI(combine_nibble3(a, b, c))),
+        (0x6, register, a, b) => Some(Instruction::SetV {
             register,
             value: combine_nibble2(a, b),
         }),
-        (0xd, register_x, register_y, bytes) => Some(OpCode::Draw {
+        (0xd, register_x, register_y, bytes) => Some(Instruction::Draw {
             register_x,
             register_y,
             bytes,
         }),
-        (0x7, register, a, b) => Some(OpCode::AddToRegister {
+        (0x7, register, a, b) => Some(Instruction::AddToRegister {
             register,
             value: combine_nibble2(a, b),
         }),
-        (0x1, a, b, c) => Some(OpCode::JumpToAddress(combine_nibble3(a, b, c))),
-        (0x3, register, a, b) => Some(OpCode::SkipIfEqual {
+        (0x1, a, b, c) => Some(Instruction::JumpToAddress(combine_nibble3(a, b, c))),
+        (0x3, register, a, b) => Some(Instruction::SkipIfEqual {
             register,
             value: combine_nibble2(a, b),
         }),
-        (0x8, register_x, register_y, 0) => Some(OpCode::StoreYToX {
+        (0x8, register_x, register_y, 0) => Some(Instruction::StoreYToX {
             register_x,
             register_y,
         }),
         _ => None,
     }
 }
-
-// fn instructions_to_opcodes(instructions: Vec<u16>) -> Vec<OpCode> {
-//     let mut opcodes = Vec::new();
-
-//     for instruction in instructions {
-//         opcodes.push(instruction_to_opcode(instruction));
-//     }
-
-//     opcodes
-// }
-
 enum UIAction<'a> {
     ClearScreen,
     Draw(&'a [[bool; 64]; 32]),
@@ -151,31 +140,31 @@ impl Program {
 
         let instruction = ((a as u16) << 8) | b as u16;
 
-        let opcode = instruction_to_opcode(instruction);
+        let opcode = parse_opcode(instruction);
         println!("instruction: {:#04x?}, opcode {:02x?}", instruction, opcode);
 
         if let Some(opcode) = opcode {
             match opcode {
-                OpCode::ClearScreen => {
+                Instruction::ClearScreen => {
                     self.pixel_buffer = [[false; 64]; 32];
                     self.program_counter += 2;
 
                     return Some(UIAction::ClearScreen);
                 }
 
-                OpCode::StoreAddrToI(addr) => {
+                Instruction::StoreAddrToI(addr) => {
                     self.program_counter += 2;
                     self.i = addr;
 
                     return None;
                 }
 
-                OpCode::SetV { register, value } => {
+                Instruction::SetV { register, value } => {
                     self.registers[register as usize] = value;
                     self.program_counter += 2;
                 }
 
-                OpCode::Draw {
+                Instruction::Draw {
                     register_x,
                     register_y,
                     bytes,
@@ -233,12 +222,12 @@ impl Program {
                     return Some(UIAction::Draw(&self.pixel_buffer));
                 }
 
-                OpCode::AddToRegister { register, value } => {
+                Instruction::AddToRegister { register, value } => {
                     self.registers[register as usize] += value;
                     self.program_counter += 2;
                 }
 
-                OpCode::JumpToAddress(address) => {
+                Instruction::JumpToAddress(address) => {
                     self.program_counter = address as usize;
                 }
 
@@ -342,19 +331,19 @@ mod tests {
 
     #[test]
     fn opcode_test() {
-        let instructions_and_opcodes: Vec<(u16, OpCode)> = vec![
-            (0x00e0, OpCode::ClearScreen),
-            (0xa22a, OpCode::StoreAddrToI(0x22a)),
+        let instructions_and_opcodes: Vec<(u16, Instruction)> = vec![
+            (0x00e0, Instruction::ClearScreen),
+            (0xa22a, Instruction::StoreAddrToI(0x22a)),
             (
                 0x600c,
-                OpCode::SetV {
+                Instruction::SetV {
                     register: 0,
                     value: 0x0c,
                 },
             ),
             (
                 0xd01f,
-                OpCode::Draw {
+                Instruction::Draw {
                     register_x: 0,
                     register_y: 1,
                     bytes: 0xf,
@@ -362,23 +351,23 @@ mod tests {
             ),
             (
                 0x7009,
-                OpCode::AddToRegister {
+                Instruction::AddToRegister {
                     register: 0,
                     value: 0x09,
                 },
             ),
-            (0x1228, OpCode::JumpToAddress(0x228)),
+            (0x1228, Instruction::JumpToAddress(0x228)),
             (
                 0x3c00,
-                OpCode::SkipIfEqual {
+                Instruction::SkipIfEqual {
                     register: 0xc,
                     value: 0x00,
                 },
             ),
-            (0x0038, OpCode::ExecuteSubroutine(0x038)),
+            (0x0038, Instruction::ExecuteSubroutine(0x038)),
             (
                 0x8320,
-                OpCode::StoreYToX {
+                Instruction::StoreYToX {
                     register_x: 3,
                     register_y: 2,
                 },
@@ -387,7 +376,7 @@ mod tests {
 
         for (instruction, opcode) in instructions_and_opcodes {
             assert_eq!(
-                instruction_to_opcode(instruction),
+                parse_opcode(instruction),
                 Some(opcode),
                 "Expecting instruction {:#04x?} to translate to opcode {:#04x?}",
                 instruction,
