@@ -26,6 +26,9 @@ enum OpCode {
 
   // 0NNN
   ExecuteSubroutine(u16),
+
+  // 8XY0
+    StoreYToX { register_x: u8, register_y: u8 }
 }
 
 fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
@@ -60,6 +63,7 @@ fn instruction_to_opcode(instruction: u16) -> OpCode {
     (0x7, register, a, b) => OpCode::AddToRegister { register, value: combine2(a, b) },
     (0x1, a, b, c) => OpCode::JumpToAddress(combine3(a, b, c)),
     (0x3, register, a, b) => OpCode::SkipIfEqual { register, value: combine2(a,b) },
+    (0x8, register_x, register_y, 0) => OpCode::StoreYToX { register_x, register_y },
     _ => panic!("Unhandled instruction: {:#04x?}", instruction)
   }
 }
@@ -117,6 +121,7 @@ mod tests {
       (0x1228, OpCode::JumpToAddress(0x228)),
       (0x3c00, OpCode::SkipIfEqual { register: 0xc, value: 0x00 }),
       (0x0038, OpCode::ExecuteSubroutine(0x038)),
+      (0x8320, OpCode::StoreYToX { register_x: 3, register_y: 2 }),
     ];
 
     for (instruction, opcode) in instructions_and_opcodes {
