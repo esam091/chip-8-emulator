@@ -189,7 +189,7 @@ impl Program {
                     let x = self.registers[register_x as usize] % 64;
                     let mut y = self.registers[register_y as usize] % 32;
 
-                    println!("start drawing at {}, {}", x, y);
+                    // println!("start drawing at {}, {}", x, y);
 
                     // try using self.vf to simplify the code
                     self.registers[0xf] = 0;
@@ -212,7 +212,7 @@ impl Program {
 
                             let pixel_value = self.pixel_buffer[y as usize][current_x as usize] as u8;
 
-                            let sprite_value = sprite_bytes & (1 << col);
+                            let sprite_value = sprite_bytes & (1 << (7 - col));
                             
                             if sprite_value != 0 {
                                 if pixel_value == 1 {
@@ -301,7 +301,6 @@ fn main() -> Result<(), String> {
                 },
 
                 UIAction::Draw(pixel_buffer) => {
-                    println!("UI draw!");
                     canvas.set_draw_color(Color::RGB(0, 0, 0));
                     canvas.clear();
 
