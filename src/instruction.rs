@@ -81,7 +81,13 @@ pub enum Instruction {
     },
 
     // 8XY6
+
     // 8XY7
+    SubtractYMinusX {
+        register_x: u8,
+        register_y: u8,
+    },
+
     // 8XYE
 
     // 9XY0
@@ -194,6 +200,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
         }),
         (0x8, register_x, register_y, 4) => Some(Instruction::AddRegisters { register_x, register_y }),
         (0x8, register_x, register_y, 5) => Some(Instruction::SubtractXMinusY { register_x, register_y }),
+        (0x8, register_x, register_y, 7) => Some(Instruction::SubtractYMinusX { register_x, register_y }),
         (0xc, register, a, b) => Some(Instruction::SetRandomNumber {
             register,
             mask: combine_nibble2(a, b),
@@ -305,6 +312,13 @@ mod tests {
                 Instruction::SubtractXMinusY {
                     register_x: 0xf,
                     register_y: 0xa,
+                }
+            ),
+            (
+                0x8cd7,
+                Instruction::SubtractYMinusX {
+                    register_x: 0xc,
+                    register_y: 0xd,
                 }
             )
         ];

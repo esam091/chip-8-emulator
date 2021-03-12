@@ -229,7 +229,16 @@ impl Machine {
                 let value_y = self.registers[register_y as usize];
 
                 self.registers[0xf] = if value_x >= value_y { 1 } else { 0 };
-                self.registers[register_x as usize] = value_y.wrapping_sub(value_y);
+                self.registers[register_x as usize] = value_x.wrapping_sub(value_y);
+
+                return None;
+            }
+            Instruction::SubtractYMinusX { register_x, register_y } => {
+                let value_x = self.registers[register_x as usize];
+                let value_y = self.registers[register_y as usize];
+
+                self.registers[0xf] = if value_y >= value_x { 1 } else { 0 };
+                self.registers[register_x as usize] = value_y.wrapping_sub(value_x);
 
                 return None;
             }
