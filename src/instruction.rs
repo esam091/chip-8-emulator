@@ -135,7 +135,9 @@ pub enum Instruction {
     // FX29
     // FX33
     // FX55
+
     // FX65
+    LoadRegisters(u8),
 }
 
 fn split_opcode(instruction: u16) -> (u8, u8, u8, u8) {
@@ -221,7 +223,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
             mask: combine_nibble2(a, b),
         }),
         (0xf, register, 0x1, 0xe) => Some(Instruction::AddRegisterToI(register)),
-
+        (0xf, register, 0x6, 0x5) => Some(Instruction::LoadRegisters(register)),
         _ => None,
     }
 }
@@ -345,6 +347,7 @@ mod tests {
             ),
             (0x8cae, Instruction::ShiftRegisterLeft { register_x: 0xc, register_y: 0xa }),
             (0x8ab6, Instruction::ShiftRegisterRight { register_x: 0xa, register_y: 0xb }),
+            (0xf165, Instruction::LoadRegisters(0x1)),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {
