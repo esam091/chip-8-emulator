@@ -26,6 +26,8 @@ pub enum Instruction {
         value: u8,
     },
 
+    // 5XY0
+
     // 6XNN
     SetV {
         register: u8,
@@ -44,6 +46,17 @@ pub enum Instruction {
         register_y: u8,
     },
 
+    // 8XY1
+    // 8XY2
+    // 8XY3
+    // 8XY4
+    // 8XY5
+    // 8XY6
+    // 8XY7
+    // 8XYE
+
+    // 9XY0
+
     // ANNN
     StoreAddrToI(u16),
 
@@ -54,8 +67,21 @@ pub enum Instruction {
         bytes: u8,
     },
 
+    // EX9E
+    // EXA1
+
+    // FX07
+    // FX0A
+    // FX15
+    // FX18
+
     // FX1E
     AddRegisterToI(u8),
+
+    // FX29
+    // FX33
+    // FX55
+    // FX65
 }
 
 fn split_opcode(instruction: u16) -> (u8, u8, u8, u8) {
