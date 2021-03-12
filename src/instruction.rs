@@ -51,7 +51,7 @@ pub enum Instruction {
     },
 
     // 8XY1
-    XorRegisters {
+    OrRegisters {
         register_x: u8,
         register_y: u8,
     },
