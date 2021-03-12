@@ -138,12 +138,12 @@ impl Program {
         let mut memory = [0 as u8; 4096];
         
         for index in 0..bytes.len() {
-            memory[index] = bytes[index];
+            memory[512 + index] = bytes[index];
         }
 
         Ok(Program {
             memory,
-            program_counter: 0,
+            program_counter: 512,
             registers: [0; 16],
             i: 0,
             pixel_buffer: [[false; 64]; 32]
@@ -159,7 +159,7 @@ impl Program {
         let opcode = instruction_to_opcode(instruction);
 
         if let Some(opcode) = opcode {
-            println!("opcode {:?}", opcode);
+            println!("opcode {:02x?}", opcode);
 
             match opcode {
                 OpCode::ClearScreen =>  {
@@ -201,6 +201,8 @@ impl Program {
                         let location = self.i as usize + index as usize;
                         let sprite_bytes = self.memory[location];
 
+                        println!("extracting sprite at {:02x?}, value: {}", location, sprite_bytes);
+
                         let mut current_x = x;
                         for col in 0..8 {
                             if current_x >= 64 {
@@ -228,6 +230,8 @@ impl Program {
                     }
 
                     self.program_counter += 2;
+
+                    return Some(UIAction::Draw(&self.pixel_buffer));
                 },
 
                 OpCode::AddToRegister { register, value } => {
@@ -239,7 +243,7 @@ impl Program {
                     self.program_counter = address as usize;
                 }
 
-                _ => return Some(UIAction::Draw(&self.pixel_buffer))
+                _ => return None
             }
         }
 
@@ -296,9 +300,11 @@ fn main() -> Result<(), String> {
                 },
 
                 UIAction::Draw(pixel_buffer) => {
-                    canvas.set_draw_color(Color::RGB(255, 255, 255));
+                    println!("UI draw!");
+                    canvas.set_draw_color(Color::RGB(0, 0, 0));
                     canvas.clear();
 
+                    canvas.set_draw_color(Color::RGB(255, 255, 255));
                     for y in 0..32 {
                         for x in 0..64 {
                             if pixel_buffer[y][x] {
