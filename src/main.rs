@@ -210,17 +210,18 @@ impl Program {
                                 break;
                             }
 
-                            let pixel_value = self.pixel_buffer[y as usize][current_x as usize] as u8;
+                            let address = &mut self.pixel_buffer[y as usize][current_x as usize];
+                            let pixel_value = *address as u8;
 
                             let sprite_value = sprite_bytes & (1 << (7 - col));
                             
                             if sprite_value != 0 {
                                 if pixel_value == 1 {
-                                    self.pixel_buffer[y as usize][current_x as usize] = false;
+                                    *address = false;
                                     self.registers[0xf] = 1;
                                 } else {
                                     println!("turn on at {}, {}", current_x, y);
-                                    self.pixel_buffer[y as usize][current_x as usize] = true;
+                                    *address = true;
                                 }
                             }
 
