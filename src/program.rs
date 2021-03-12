@@ -137,7 +137,12 @@ impl Machine {
                 return None;
             }
 
-            _ => return None,
+            Instruction::AddRegisterToI(register) => {
+                self.i += self.registers[register as usize] as u16;
+                return None;
+            }
+
+            _ => panic!("Unhandled instruction: {:#04x?}", instruction),
         }
     }
 

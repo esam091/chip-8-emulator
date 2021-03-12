@@ -50,6 +50,8 @@ pub enum Instruction {
         register_x: u8,
         register_y: u8,
     },
+
+    AddRegisterToI(u8),
 }
 
 fn split_opcode(instruction: u16) -> (u8, u8, u8, u8) {
@@ -105,6 +107,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
             register_x,
             register_y,
         }),
+        (0xf, register, 0x1, 0xe) => Some(Instruction::AddRegisterToI(register)),
         _ => None,
     }
 }
@@ -168,6 +171,10 @@ mod tests {
                     value: 0x40,
                 },
             ),
+            (
+                0xf21e,
+                Instruction::AddRegisterToI(2),
+            )
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {
