@@ -91,6 +91,10 @@ pub enum Instruction {
     // 8XYE
 
     // 9XY0
+    SkipIfRegistersNotEqual {
+        register_x: u8,
+        register_y: u8,
+    },
 
     // ANNN
     StoreAddrToI(u16),
@@ -201,6 +205,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
         (0x8, register_x, register_y, 4) => Some(Instruction::AddRegisters { register_x, register_y }),
         (0x8, register_x, register_y, 5) => Some(Instruction::SubtractXMinusY { register_x, register_y }),
         (0x8, register_x, register_y, 7) => Some(Instruction::SubtractYMinusX { register_x, register_y }),
+        (0x9, register_x, register_y, 0) => Some(Instruction::SkipIfRegistersNotEqual { register_x, register_y }),
         (0xc, register, a, b) => Some(Instruction::SetRandomNumber {
             register,
             mask: combine_nibble2(a, b),
@@ -319,6 +324,13 @@ mod tests {
                 Instruction::SubtractYMinusX {
                     register_x: 0xc,
                     register_y: 0xd,
+                }
+            ),
+            (
+                0x9cf0,
+                Instruction::SkipIfRegistersNotEqual {
+                    register_x: 0xc,
+                    register_y: 0xf,
                 }
             )
         ];
