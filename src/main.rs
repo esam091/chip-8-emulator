@@ -20,6 +20,9 @@ enum OpCode {
 
   // 1NNN
   JumpToAddress(u16),
+
+  // 3XNN
+  SkipIfEqual { register: u8, value: u16 },
 }
 
 fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
@@ -52,6 +55,7 @@ fn instruction_to_opcode(instruction: u16) -> OpCode {
     (0xd, register_x, register_y, bytes) => OpCode::Draw { register_x, register_y, bytes },
     (0x7, register, a, b) => OpCode::AddToRegister { register, value: combine2(a, b) },
     (0x1, a, b, c) => OpCode::JumpToAddress(combine3(a, b, c)),
+    (0x3, register, a, b) => OpCode::SkipIfEqual { register, value: combine2(a,b) },
     _ => panic!("Unhandled instruction: {:#04x?}", instruction)
   }
 }
@@ -80,9 +84,11 @@ fn main() -> Result<(), String> {
     .map(|a| u16::from_be_bytes([a[0], a[1]]))
     .collect();
 
-  let opcodes = instructions_to_opcodes(u16_vec);
+  println!("{:04x?}", u16_vec);
 
-  println!("{:04x?}", opcodes);
+  // let opcodes = instructions_to_opcodes(u16_vec);
+
+  // println!("{:04x?}", opcodes);
 
   Ok(())
 }
@@ -105,6 +111,7 @@ mod tests {
       (0xd01f, OpCode::Draw { register_x: 0, register_y: 1, bytes: 0xf }),
       (0x7009, OpCode::AddToRegister { register: 0, value: 0x09 }),
       (0x1228, OpCode::JumpToAddress(0x228)),
+      (0x3c00, OpCode::SkipIfEqual { register: 0xc, value: 0x00 }),
     ];
 
     for (instruction, opcode) in instructions_and_opcodes {
