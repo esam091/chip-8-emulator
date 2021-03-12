@@ -1,10 +1,10 @@
 pub mod instruction;
 pub mod program;
 
-use std::{convert::TryInto, time::Duration};
 use std::env;
+use std::{convert::TryInto, time::Duration};
 
-use program::{NUM_COLS, NUM_ROWS, Machine, UIAction};
+use program::{Machine, UIAction, NUM_COLS, NUM_ROWS};
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
 const SCALE: u32 = 10;
@@ -20,7 +20,11 @@ fn main() -> Result<(), String> {
     let video_subsystem = sdl_context.video().unwrap();
 
     let window = video_subsystem
-        .window("CHIP-8 Emulator", (NUM_COLS as u32) * SCALE, (NUM_ROWS as u32) * SCALE)
+        .window(
+            "CHIP-8 Emulator",
+            (NUM_COLS as u32) * SCALE,
+            (NUM_ROWS as u32) * SCALE,
+        )
         .position_centered()
         .build()
         .unwrap();
@@ -89,4 +93,3 @@ fn main() -> Result<(), String> {
 
     Ok(())
 }
-

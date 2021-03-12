@@ -1,8 +1,8 @@
-
-#[path = "./instruction.rs"] mod instruction;
+#[path = "./instruction.rs"]
+mod instruction;
 use std::fs;
 
-use instruction::{Instruction, parse_opcode};
+use instruction::{parse_opcode, Instruction};
 
 pub const NUM_ROWS: usize = 32;
 pub const NUM_COLS: usize = 64;
@@ -116,7 +116,6 @@ impl Machine {
                     y += 1
                 }
 
-
                 return Some(UIAction::Draw(&self.pixel_buffer));
             }
 
@@ -131,8 +130,7 @@ impl Machine {
             }
 
             _ => return None,
-        } 
-        
+        }
     }
 
     pub fn step(&mut self) -> Option<UIAction> {
@@ -145,10 +143,8 @@ impl Machine {
         self.program_counter += 2;
         println!("instruction: {:#04x?}, opcode {:02x?}", opcode, instruction);
 
-        match instruction {
-            None => panic!("Failed to translate opcode: {:#02x?}, either the opcode is not supported yet, or there is a bug in the interpreter", opcode),
-            Some(instruction) => return self.handle_instruction(instruction)
-        }
+        return instruction
+            .map(|instruction| self.handle_instruction(instruction))
+            .expect(format!("Failed to translate opcode: {:#02x?}, either the opcode is not supported yet, or there is a bug in the interpreter", opcode).into());
     }
-
 }
