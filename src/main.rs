@@ -112,25 +112,37 @@ fn instructions_to_opcodes(instructions: Vec<u16>) -> Vec<OpCode> {
     opcodes
 }
 
+struct Program {
+    memory: [u8; 4096],
+    program_counter: u8,
+    
+}
+
+impl Program {
+    fn load(file_name: &String) -> Result<Program, String> {
+        let bytes = fs::read(file_name)
+            .map_err(|_| format!("Read failed from {}", file_name))?;
+
+        let memory: [u8; 4096] = bytes.try_into()
+            .map_err(|_| "Failed to copy to memory".to_string())?;
+
+        Ok(Program {
+            memory,
+            program_counter: 0
+        })
+    }
+}
+
 fn main() -> Result<(), String> {
-    // let args: Vec<String> = env::args().collect();
+    let args: Vec<String> = env::args().collect();
 
-    // let file_name = &args[1];
-
-    // // Todo
-    // let bytes = fs::read(file_name)
-    //   .map_err(|err| format!("Read failed from {}", file_name))?;
-
-    // // TODO: handle odd number of bytes
-    // let u16_vec: Vec<u16> = bytes.chunks_exact(2)
-    //   .map(|a| u16::from_be_bytes([a[0], a[1]]))
-    //   .collect();
-
-    // println!("{:04x?}", u16_vec);
+    let file_name = &args[1];
 
     // // let opcodes = instructions_to_opcodes(u16_vec);
 
     // // println!("{:04x?}", opcodes);
+
+    let mut program = Program::load(file_name);
 
     let mut x = 0;
     let mut y = 0;
