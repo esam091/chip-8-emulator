@@ -15,7 +15,7 @@ pub enum UIAction<'a> {
     Draw(&'a [[bool; 64]; 32]),
 }
 
-pub struct Program {
+pub struct Machine {
     memory: [u8; MEMORY_SIZE],
     program_counter: usize,
 
@@ -24,8 +24,8 @@ pub struct Program {
     pixel_buffer: [[bool; NUM_COLS as usize]; NUM_ROWS as usize],
 }
 
-impl Program {
-    pub fn load(file_name: &String) -> Result<Program, String> {
+impl Machine {
+    pub fn load(file_name: &String) -> Result<Machine, String> {
         let bytes = fs::read(file_name).map_err(|_| format!("Read failed from {}", file_name))?;
 
         let mut memory = [0 as u8; MEMORY_SIZE];
@@ -34,7 +34,7 @@ impl Program {
             memory[PROGRAM_STARTING_ADDRESS + index] = bytes[index];
         }
 
-        Ok(Program {
+        Ok(Machine {
             memory,
             program_counter: PROGRAM_STARTING_ADDRESS,
             registers: [0; 16],

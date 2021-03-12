@@ -4,7 +4,7 @@ pub mod program;
 use std::{convert::TryInto, time::Duration};
 use std::env;
 
-use program::{NUM_COLS, NUM_ROWS, Program, UIAction};
+use program::{NUM_COLS, NUM_ROWS, Machine, UIAction};
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
 const SCALE: u32 = 10;
@@ -14,7 +14,7 @@ fn main() -> Result<(), String> {
 
     let file_name = &args[1];
 
-    let mut program = Program::load(file_name)?;
+    let mut machine = Machine::load(file_name)?;
 
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -50,7 +50,7 @@ fn main() -> Result<(), String> {
             }
         }
 
-        if let Some(ui_action) = program.step() {
+        if let Some(ui_action) = machine.step() {
             match ui_action {
                 UIAction::ClearScreen => {
                     canvas.set_draw_color(Color::RGB(0, 0, 0));
