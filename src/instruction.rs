@@ -27,6 +27,10 @@ pub enum Instruction {
     },
 
     // 5XY0
+    SkipIfRegistersEqual {
+        register_x: u8,
+        register_y: u8,
+    },
 
     // 6XNN
     SetV {
@@ -143,11 +147,18 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
             register,
             value: combine_nibble2(a, b),
         }),
+        (0x5, register_x, register_y, 0) => Some(Instruction::SkipIfRegistersEqual {
+            register_x,
+            register_y,
+        }),
         (0x8, register_x, register_y, 0) => Some(Instruction::StoreYToX {
             register_x,
             register_y,
         }),
-        (0xc, register, a, b) => Some(Instruction::SetRandomNumber { register, mask: combine_nibble2(a, b) }),
+        (0xc, register, a, b) => Some(Instruction::SetRandomNumber {
+            register,
+            mask: combine_nibble2(a, b),
+        }),
         (0xf, register, 0x1, 0xe) => Some(Instruction::AddRegisterToI(register)),
 
         _ => None,
@@ -213,6 +224,13 @@ mod tests {
                 Instruction::SetRandomNumber {
                     register: 0xc,
                     mask: 0x01,
+                },
+            ),
+            (
+                0x5ab0,
+                Instruction::SkipIfRegistersEqual {
+                    register_x: 0xa,
+                    register_y: 0xb,
                 },
             ),
         ];

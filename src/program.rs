@@ -181,6 +181,16 @@ impl Machine {
 
                 return None;
             }
+            Instruction::SkipIfRegistersEqual {
+                register_x,
+                register_y,
+            } => {
+                if self.registers[register_x as usize] == self.registers[register_y as usize] {
+                    self.program_counter += 2;
+                }
+
+                return None;
+            }
         }
     }
 
