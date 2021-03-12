@@ -1,5 +1,7 @@
-use std::{convert::TryInto, fs};
+use std::{convert::TryInto, fs, time::Duration};
 use std::env;
+
+use sdl2::{event::Event, keyboard::Keycode, pixels::Color};
 
 #[derive(Debug, PartialEq, Eq)]
 enum OpCode {
@@ -79,24 +81,58 @@ fn instructions_to_opcodes(instructions: Vec<u16>) -> Vec<OpCode> {
 }
 
 fn main() -> Result<(), String> {
-  let args: Vec<String> = env::args().collect();
+  // let args: Vec<String> = env::args().collect();
 
-  let file_name = &args[1];
+  // let file_name = &args[1];
 
-  // Todo
-  let bytes = fs::read(file_name)
-    .map_err(|err| format!("Read failed from {}", file_name))?;
+  // // Todo
+  // let bytes = fs::read(file_name)
+  //   .map_err(|err| format!("Read failed from {}", file_name))?;
 
-  // TODO: handle odd number of bytes
-  let u16_vec: Vec<u16> = bytes.chunks_exact(2)
-    .map(|a| u16::from_be_bytes([a[0], a[1]]))
-    .collect();
+  // // TODO: handle odd number of bytes
+  // let u16_vec: Vec<u16> = bytes.chunks_exact(2)
+  //   .map(|a| u16::from_be_bytes([a[0], a[1]]))
+  //   .collect();
 
-  println!("{:04x?}", u16_vec);
+  // println!("{:04x?}", u16_vec);
 
-  // let opcodes = instructions_to_opcodes(u16_vec);
+  // // let opcodes = instructions_to_opcodes(u16_vec);
 
-  // println!("{:04x?}", opcodes);
+  // // println!("{:04x?}", opcodes);
+
+  let sdl_context = sdl2::init().unwrap();
+    let video_subsystem = sdl_context.video().unwrap();
+ 
+    let window = video_subsystem.window("rust-sdl2 demo", 640, 320)
+        .position_centered()
+        .build()
+        .unwrap();
+ 
+    let mut canvas = window.into_canvas().build().unwrap();
+ 
+    canvas.set_draw_color(Color::RGB(0, 255, 255));
+    canvas.clear();
+    canvas.present();
+    let mut event_pump = sdl_context.event_pump().unwrap();
+    let mut i = 0;
+    'running: loop {
+        i = (i + 1) % 255;
+        canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
+        canvas.clear();
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::Quit {..} |
+                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                    break 'running
+                },
+                _ => {}
+            }
+        }
+        // The rest of the game loop goes here...
+
+        canvas.present();
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+    }
 
   Ok(())
 }
