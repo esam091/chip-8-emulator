@@ -157,9 +157,10 @@ impl Program {
         let instruction = ((a as u16) << 8) | b as u16;
 
         let opcode = instruction_to_opcode(instruction);
+        println!("instruction: {:#04x?}, opcode {:02x?}", instruction, opcode);
 
         if let Some(opcode) = opcode {
-            println!("opcode {:02x?}", opcode);
+            
 
             match opcode {
                 OpCode::ClearScreen =>  {
@@ -201,7 +202,7 @@ impl Program {
                         let location = self.i as usize + index as usize;
                         let sprite_bytes = self.memory[location];
 
-                        println!("extracting sprite at {:02x?}, value: {}", location, sprite_bytes);
+                        println!("extracting sprite at {:02x?}, value: {:#08b}", location, sprite_bytes);
 
                         let mut current_x = x;
                         for col in 0..8 {
@@ -213,7 +214,7 @@ impl Program {
 
                             let sprite_value = sprite_bytes & (1 << col);
                             
-                            if sprite_value == 1 {
+                            if sprite_value != 0 {
                                 if pixel_value == 1 {
                                     self.pixel_buffer[y as usize][current_x as usize] = false;
                                     self.registers[0xf] = 1;
