@@ -116,8 +116,9 @@ fn instruction_to_opcode(instruction: u16) -> Option<OpCode> {
 //     opcodes
 // }
 
-enum UIAction {
-    ClearScreen
+enum UIAction<'a> {
+    ClearScreen,
+    Draw(&'a [[bool; 64]; 32])
 }
 
 struct Program {
@@ -278,6 +279,24 @@ fn main() -> Result<(), String> {
                 UIAction::ClearScreen => {
                     canvas.set_draw_color(Color::RGB(0, 0, 0));
                     canvas.clear();
+                },
+
+                UIAction::Draw(pixel_buffer) => {
+                    canvas.set_draw_color(Color::RGB(255, 255, 255));
+                    canvas.clear();
+
+                    for y in 0..32 {
+                        for x in 0..64 {
+                            if pixel_buffer[y][x] {
+                                let x = (x * 10).try_into().map_err(|value| format!("Failed converting {} to i32", value))?;
+                                let y = (y * 10).try_into().map_err(|value| format!("Failed converting {} to i32", value))?;
+                                
+                                canvas.fill_rect(Rect::new(x, y, 10, 10)).unwrap();
+                            }
+                        }
+                    }
+
+                    canvas.present();
                 },
             }
         }
