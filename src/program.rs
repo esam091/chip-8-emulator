@@ -196,6 +196,11 @@ impl Machine {
 
                 return None;
             }
+            Instruction::AndRegisters { register_x, register_y } => {
+                self.registers[register_x as usize] &= self.registers[register_y as usize];
+
+                return None;
+            }
         }
     }
 

@@ -57,6 +57,11 @@ pub enum Instruction {
     },
 
     // 8XY2
+    AndRegisters {
+        register_x: u8,
+        register_y: u8,
+    },
+
     // 8XY3
     // 8XY4
     // 8XY5
@@ -161,6 +166,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
             register_y,
         }),
         (0x8, register_x, register_y, 1) => Some(Instruction::OrRegisters { register_x, register_y }),
+        (0x8, register_x, register_y, 2) => Some(Instruction::AndRegisters { register_x, register_y }),
         (0xc, register, a, b) => Some(Instruction::SetRandomNumber {
             register,
             mask: combine_nibble2(a, b),
@@ -244,6 +250,13 @@ mod tests {
                 Instruction::OrRegisters {
                     register_x: 0xc,
                     register_y: 0xd,
+                }
+            ),
+            (
+                0x83a2,
+                Instruction::AndRegisters {
+                    register_x: 0x3,
+                    register_y: 0xa,
                 }
             )
         ];
