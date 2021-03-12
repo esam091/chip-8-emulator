@@ -88,7 +88,7 @@ mod tests {
     ];
 
     for (instruction, opcode) in instructions_and_opcodes {
-      assert_eq!(instruction_to_opcode(instruction), opcode);
+      assert_eq!(instruction_to_opcode(instruction), opcode, "Expecting instruction {:#04x?} to translate to opcode {:#04x?}", instruction, opcode);
     }
   }
 }
