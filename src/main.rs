@@ -1,12 +1,22 @@
-use std::{convert::TryInto, fs, ops::Shl};
+use std::{convert::TryInto, fs};
 use std::env;
 
 #[derive(Debug, PartialEq, Eq)]
 enum OpCode {
+  // 00E0
   ClearScreen,
+
+  // ANNN
   StoreAddrToI(u16),
+
+  // 6XNN
   SetV { register: u8, value: u16 },
+
+  // DXYN
   Draw { register_x: u8, register_y: u8, bytes: u8 },
+
+  // 7XNN
+  AddToRegister { register: u8, value: u16 }
 }
 
 fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
@@ -37,6 +47,7 @@ fn instruction_to_opcode(instruction: u16) -> OpCode {
     (0xa, a, b, c) => OpCode::StoreAddrToI(combine3(a, b, c)),
     (0x6, register, a, b) => OpCode::SetV { register, value: combine2(a, b) },
     (0xd, register_x, register_y, bytes) => OpCode::Draw { register_x, register_y, bytes },
+    (0x7, register, a, b) => OpCode::AddToRegister { register, value: combine2(a, b) },
     _ => panic!("Unhandled instruction: {:#04x?}", instruction)
   }
 }
@@ -88,6 +99,7 @@ mod tests {
       (0xa22a, OpCode::StoreAddrToI(0x22a)),
       (0x600c, OpCode::SetV { register: 0, value: 0x0c }),
       (0xd01f, OpCode::Draw { register_x: 0, register_y: 1, bytes: 0xf }),
+      (0x7009, OpCode::AddToRegister { register: 0, value: 0x09 }),
     ];
 
     for (instruction, opcode) in instructions_and_opcodes {
