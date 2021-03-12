@@ -81,8 +81,14 @@ mod tests {
 
   #[test]
   fn opcode_test() {
-    assert_eq!(instruction_to_opcode(0x00e0), OpCode::ClearScreen);
-    assert_eq!(instruction_to_opcode(0xa22a), OpCode::StoreAddrToI(0x22a));
-    assert_eq!(instruction_to_opcode(0x600c), OpCode::SetV { register: 0, value: 0x0c });
+    let instructions_and_opcodes: Vec<(u16, OpCode)> = vec![
+      (0x00e0, OpCode::ClearScreen),
+      (0xa22a, OpCode::StoreAddrToI(0x22a)),
+      (0x600c, OpCode::SetV { register: 0, value: 0x0c })
+    ];
+
+    for (instruction, opcode) in instructions_and_opcodes {
+      assert_eq!(instruction_to_opcode(instruction), opcode);
+    }
   }
 }
