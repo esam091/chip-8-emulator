@@ -50,19 +50,18 @@ impl Machine {
         let instruction = ((a as u16) << 8) | b as u16;
 
         let opcode = parse_opcode(instruction);
+        self.program_counter += 2;
         println!("instruction: {:#04x?}, opcode {:02x?}", instruction, opcode);
 
         if let Some(opcode) = opcode {
             match opcode {
                 Instruction::ClearScreen => {
                     self.pixel_buffer = [[false; 64]; 32];
-                    self.program_counter += 2;
 
                     return Some(UIAction::ClearScreen);
                 }
 
                 Instruction::StoreAddrToI(addr) => {
-                    self.program_counter += 2;
                     self.i = addr;
 
                     return None;
@@ -70,7 +69,6 @@ impl Machine {
 
                 Instruction::SetV { register, value } => {
                     self.registers[register as usize] = value;
-                    self.program_counter += 2;
                 }
 
                 Instruction::Draw {
@@ -126,14 +124,12 @@ impl Machine {
                         y += 1
                     }
 
-                    self.program_counter += 2;
 
                     return Some(UIAction::Draw(&self.pixel_buffer));
                 }
 
                 Instruction::AddToRegister { register, value } => {
                     self.registers[register as usize] += value;
-                    self.program_counter += 2;
                 }
 
                 Instruction::JumpToAddress(address) => {
@@ -141,7 +137,9 @@ impl Machine {
                 }
 
                 _ => return None,
-            }
+            } 
+        } else {
+            panic!("Failed to translate opcode: {:#02x?}, either the opcode is not supported yet, or there is a bug in the interpreter", instruction);
         }
 
         return None;
