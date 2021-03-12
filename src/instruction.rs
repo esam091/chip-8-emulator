@@ -5,6 +5,9 @@ pub enum Instruction {
     // 00E0
     ClearScreen,
 
+    // 00EE,
+    ReturnFromSubroutine,
+
     // 2NNN,
     CallSubroutineAtAddress(u16),
 
@@ -83,6 +86,7 @@ fn combine_nibble3(a: u8, b: u8, c: u8) -> u16 {
 pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
     match split_opcode(instruction) {
         (0x0, 0x0, 0xe, 0x0) => Some(Instruction::ClearScreen),
+        (0x0, 0x0, 0xe, 0xe) => Some(Instruction::ReturnFromSubroutine),
         (0x0, a, b, c) => Some(Instruction::ExecuteSubroutine(combine_nibble3(a, b, c))),
         (0x2, a, b, c) => Some(Instruction::CallSubroutineAtAddress(combine_nibble3(a, b, c))),
         (0xa, a, b, c) => Some(Instruction::StoreAddrToI(combine_nibble3(a, b, c))),
@@ -181,7 +185,8 @@ mod tests {
                 0xf21e,
                 Instruction::AddRegisterToI(2),
             ),
-            (0x221a, Instruction::CallSubroutineAtAddress(0x21a))
+            (0x221a, Instruction::CallSubroutineAtAddress(0x21a)),
+            (0x00ee, Instruction::ReturnFromSubroutine),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {

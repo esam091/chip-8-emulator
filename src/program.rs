@@ -150,6 +150,11 @@ impl Machine {
                 return None;
             }
 
+            Instruction::ReturnFromSubroutine => {
+                let return_address = self.stack.pop().expect("Returning from subroutine, but the stack is empty");
+                self.program_counter = return_address;
+                return None;
+            }
             _ => panic!("Unhandled instruction: {:#04x?}", instruction),
         }
     }
