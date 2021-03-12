@@ -1,9 +1,10 @@
-use std::{convert::TryInto, fs, ops::BitXor};
+use std::{convert::TryInto, fs, ops::Shl};
 use std::env;
 
+#[derive(Debug, PartialEq, Eq)]
 enum OpCode {
   ClearScreen,
-
+  StoreAddrToI(u16),
 }
 
 fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
@@ -21,8 +22,9 @@ fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
 }
 
 fn instruction_to_opcode(instruction: u16) -> OpCode {
-  match instruction {
-    0x0e00 => OpCode::ClearScreen,
+  match split_instruction(instruction) {
+    (0x0, 0x0, 0xe, 0x0) => OpCode::ClearScreen,
+    (0xa, a, b, c) => OpCode::StoreAddrToI(((a as u16) << 8) ^ ((b as u16) << 4) ^ c as u16),
     _ => panic!("Unhandled instruction: {:#04x?}", instruction)
   }
 }
@@ -51,7 +53,9 @@ fn main() -> Result<(), String> {
     .map(|a| u16::from_be_bytes([a[0], a[1]]))
     .collect();
 
-  println!("{:04x?}", u16_vec);
+  let opcodes = instructions_to_opcodes(u16_vec);
+
+  println!("{:04x?}", opcodes);
 
   Ok(())
 }
@@ -63,5 +67,11 @@ mod tests {
   fn split_test() {
     assert_eq!(split_instruction(0xabcd), (0xa, 0xb, 0xc, 0xd));
     assert_eq!(split_instruction(0x839a), (0x8, 0x3, 0x9, 0xa));
+  }
+
+  #[test]
+  fn opcode_test() {
+    assert_eq!(instruction_to_opcode(0x00e0), OpCode::ClearScreen);
+    assert_eq!(instruction_to_opcode(0xa22a), OpCode::StoreAddrToI(0x22a));
   }
 }
