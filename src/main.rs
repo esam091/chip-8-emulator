@@ -23,6 +23,9 @@ enum OpCode {
 
   // 3XNN
   SkipIfEqual { register: u8, value: u16 },
+
+  // 0NNN
+  ExecuteSubroutine(u16),
 }
 
 fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
@@ -50,6 +53,7 @@ fn combine3(a: u8, b: u8, c: u8) -> u16 {
 fn instruction_to_opcode(instruction: u16) -> OpCode {
   match split_instruction(instruction) {
     (0x0, 0x0, 0xe, 0x0) => OpCode::ClearScreen,
+    (0x0, a, b, c) => OpCode::ExecuteSubroutine(combine3(a, b, c)),
     (0xa, a, b, c) => OpCode::StoreAddrToI(combine3(a, b, c)),
     (0x6, register, a, b) => OpCode::SetV { register, value: combine2(a, b) },
     (0xd, register_x, register_y, bytes) => OpCode::Draw { register_x, register_y, bytes },
@@ -112,6 +116,7 @@ mod tests {
       (0x7009, OpCode::AddToRegister { register: 0, value: 0x09 }),
       (0x1228, OpCode::JumpToAddress(0x228)),
       (0x3c00, OpCode::SkipIfEqual { register: 0xc, value: 0x00 }),
+      (0x0038, OpCode::ExecuteSubroutine(0x038)),
     ];
 
     for (instruction, opcode) in instructions_and_opcodes {
