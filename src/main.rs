@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, ops::Index};
 use std::{convert::TryInto, fs, time::Duration};
 
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
@@ -112,6 +112,10 @@ fn instructions_to_opcodes(instructions: Vec<u16>) -> Vec<OpCode> {
     opcodes
 }
 
+enum UIAction {
+    ClearScreen
+}
+
 struct Program {
     memory: [u8; 4096],
     program_counter: u8,
@@ -123,14 +127,23 @@ impl Program {
         let bytes = fs::read(file_name)
             .map_err(|_| format!("Read failed from {}", file_name))?;
 
-        let memory: [u8; 4096] = bytes.try_into()
-            .map_err(|_| "Failed to copy to memory".to_string())?;
+        let mut memory = [0 as u8; 4096];
+        
+        for index in 0..bytes.len() {
+            memory[index] = bytes[index];
+        }
 
         Ok(Program {
             memory,
             program_counter: 0
         })
     }
+
+    // fn step(self) -> Option<UIAction> {
+    //     let a = self.memory.index(self.program_counter)
+    //     let b  = self.memory[self.program_counter + 1];
+    //     None
+    // }
 }
 
 fn main() -> Result<(), String> {
@@ -138,11 +151,7 @@ fn main() -> Result<(), String> {
 
     let file_name = &args[1];
 
-    // // let opcodes = instructions_to_opcodes(u16_vec);
-
-    // // println!("{:04x?}", opcodes);
-
-    let mut program = Program::load(file_name);
+    let mut program = Program::load(file_name)?;
 
     let mut x = 0;
     let mut y = 0;
@@ -158,7 +167,7 @@ fn main() -> Result<(), String> {
 
     let mut canvas = window.into_canvas().build().unwrap();
 
-    canvas.set_draw_color(Color::RGB(0, 255, 255));
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
     canvas.present();
     let mut event_pump = sdl_context.event_pump().unwrap();
@@ -183,10 +192,10 @@ fn main() -> Result<(), String> {
         }
         // The rest of the game loop goes here...
 
-        canvas.set_draw_color(Color::RGB(255, 255, 255));
+        // canvas.set_draw_color(Color::RGB(255, 255, 255));
 
-        canvas.fill_rect(Rect::new(x, y, 20, 20)).unwrap();
-        canvas.present();
+        // canvas.fill_rect(Rect::new(x, y, 20, 20)).unwrap();
+        // canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 
