@@ -122,7 +122,8 @@ impl Machine {
             }
 
             Instruction::AddToRegister { register, value } => {
-                self.registers[register as usize] += value;
+                self.registers[register as usize] = self.registers[register as usize].wrapping_add(value);
+                
                 return None;
             }
 
@@ -177,7 +178,7 @@ impl Machine {
 
         let instruction = parse_opcode(opcode);
         self.program_counter += 2;
-        println!("instruction: {:#04x?}, opcode {:02x?}", opcode, instruction);
+        // println!("instruction: {:#04x?}, opcode {:02x?}", opcode, instruction);
 
         return instruction
             .map(move |instruction| self.handle_instruction(instruction))
