@@ -78,8 +78,8 @@ impl Program {
                     register_y,
                     bytes,
                 } => {
-                    let x = self.registers[register_x as usize] % 64;
-                    let mut y = self.registers[register_y as usize] % 32;
+                    let x = self.registers[register_x as usize] % (NUM_COLS as u8);
+                    let mut y = self.registers[register_y as usize] % (NUM_ROWS as u8);
 
                     // println!("start drawing at {}, {}", x, y);
 
@@ -94,10 +94,10 @@ impl Program {
                         let location = self.i as usize + index as usize;
                         let sprite_bytes = self.memory[location];
 
-                        println!(
-                            "extracting sprite at {:02x?}, value: {:#08b}",
-                            location, sprite_bytes
-                        );
+                        // println!(
+                        //     "extracting sprite at {:02x?}, value: {:#08b}",
+                        //     location, sprite_bytes
+                        // );
 
                         let mut current_x = x;
                         for col in 0..8 {
@@ -115,7 +115,7 @@ impl Program {
                                     *address = false;
                                     self.registers[0xf] = 1;
                                 } else {
-                                    println!("turn on at {}, {}", current_x, y);
+                                    // println!("turn on at {}, {}", current_x, y);
                                     *address = true;
                                 }
                             }
@@ -146,4 +146,5 @@ impl Program {
 
         return None;
     }
+
 }
