@@ -259,6 +259,14 @@ impl Machine {
 
                 return None;
             }
+            Instruction::ShiftRegisterRight { register_x, register_y } => {
+                let value_y = self.registers[register_y as usize];
+
+                self.registers[0xf] = value_y & 1;
+                self.registers[register_x as usize] = value_y / 2;
+
+                return None;
+            }
         }
     }
 

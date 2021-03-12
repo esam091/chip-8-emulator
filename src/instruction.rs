@@ -81,6 +81,10 @@ pub enum Instruction {
     },
 
     // 8XY6
+    ShiftRegisterRight {
+        register_x: u8,
+        register_y: u8,
+    },
 
     // 8XY7
     SubtractYMinusX {
@@ -208,6 +212,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
         }),
         (0x8, register_x, register_y, 4) => Some(Instruction::AddRegisters { register_x, register_y }),
         (0x8, register_x, register_y, 5) => Some(Instruction::SubtractXMinusY { register_x, register_y }),
+        (0x8, register_x, register_y, 6) => Some(Instruction::ShiftRegisterRight { register_x, register_y }),
         (0x8, register_x, register_y, 7) => Some(Instruction::SubtractYMinusX { register_x, register_y }),
         (0x8, register_x, register_y, 0xe) => Some(Instruction::ShiftRegisterLeft { register_x, register_y }),
         (0x9, register_x, register_y, 0) => Some(Instruction::SkipIfRegistersNotEqual { register_x, register_y }),
@@ -339,6 +344,7 @@ mod tests {
                 }
             ),
             (0x8cae, Instruction::ShiftRegisterLeft { register_x: 0xc, register_y: 0xa }),
+            (0x8ab6, Instruction::ShiftRegisterRight { register_x: 0xa, register_y: 0xb }),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {
