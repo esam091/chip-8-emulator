@@ -274,6 +274,13 @@ impl Machine {
 
                 return None;
             }
+            Instruction::SaveRegisters(final_register) => {
+                for register in 0 ..= final_register {
+                    self.memory[self.i as usize + register as usize] = self.registers[register as usize];
+                }
+
+                return None;
+            }
         }
     }
 
