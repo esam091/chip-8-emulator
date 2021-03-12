@@ -4,12 +4,10 @@ pub mod program;
 use std::{convert::TryInto, time::Duration};
 use std::env;
 
-
-use program::{Program, UIAction};
+use program::{NUM_COLS, NUM_ROWS, Program, UIAction};
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
-// use instruction;
-
+const SCALE: u32 = 10;
 
 fn main() -> Result<(), String> {
     let args: Vec<String> = env::args().collect();
@@ -22,7 +20,7 @@ fn main() -> Result<(), String> {
     let video_subsystem = sdl_context.video().unwrap();
 
     let window = video_subsystem
-        .window("CHIP-8 Emulator", 640, 320)
+        .window("CHIP-8 Emulator", (NUM_COLS as u32) * SCALE, (NUM_ROWS as u32) * SCALE)
         .position_centered()
         .build()
         .unwrap();
@@ -64,8 +62,8 @@ fn main() -> Result<(), String> {
                     canvas.clear();
 
                     canvas.set_draw_color(Color::RGB(255, 255, 255));
-                    for y in 0..32 {
-                        for x in 0..64 {
+                    for y in 0..NUM_ROWS {
+                        for x in 0..NUM_COLS {
                             if pixel_buffer[y][x] {
                                 let x = (x * 10).try_into().map_err(|value| {
                                     format!("Failed converting {} to i32", value)

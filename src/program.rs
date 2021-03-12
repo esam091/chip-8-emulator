@@ -4,36 +4,42 @@ use std::fs;
 
 use instruction::{Instruction, parse_opcode};
 
+pub const NUM_ROWS: usize = 32;
+pub const NUM_COLS: usize = 64;
+
+const MEMORY_SIZE: usize = 4096;
+const PROGRAM_STARTING_ADDRESS: usize = 512;
+
 pub enum UIAction<'a> {
     ClearScreen,
     Draw(&'a [[bool; 64]; 32]),
 }
 
 pub struct Program {
-    memory: [u8; 4096],
+    memory: [u8; MEMORY_SIZE],
     program_counter: usize,
 
     registers: [u8; 16],
     i: u16,
-    pixel_buffer: [[bool; 64]; 32],
+    pixel_buffer: [[bool; NUM_COLS as usize]; NUM_ROWS as usize],
 }
 
 impl Program {
     pub fn load(file_name: &String) -> Result<Program, String> {
         let bytes = fs::read(file_name).map_err(|_| format!("Read failed from {}", file_name))?;
 
-        let mut memory = [0 as u8; 4096];
+        let mut memory = [0 as u8; MEMORY_SIZE];
 
         for index in 0..bytes.len() {
-            memory[512 + index] = bytes[index];
+            memory[PROGRAM_STARTING_ADDRESS + index] = bytes[index];
         }
 
         Ok(Program {
             memory,
-            program_counter: 512,
+            program_counter: PROGRAM_STARTING_ADDRESS,
             registers: [0; 16],
             i: 0,
-            pixel_buffer: [[false; 64]; 32],
+            pixel_buffer: [[false; NUM_COLS]; NUM_ROWS],
         })
     }
 
