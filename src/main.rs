@@ -120,6 +120,9 @@ struct Program {
     memory: [u8; 4096],
     program_counter: usize,
     
+    v0: u8,
+    v1: u8,
+    v2: u8,
 }
 
 impl Program {
@@ -135,7 +138,11 @@ impl Program {
 
         Ok(Program {
             memory,
-            program_counter: 0
+            program_counter: 0,
+
+            v0: 0,
+            v1: 0,
+            v2: 0,
         })
     }
 
@@ -164,9 +171,6 @@ fn main() -> Result<(), String> {
 
     let mut program = Program::load(file_name)?;
 
-    let mut x = 0;
-    let mut y = 0;
-
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
 
@@ -193,10 +197,10 @@ fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
-                Event::KeyDown {
-                    keycode: Some(Keycode::Right),
-                    ..
-                } => x += 10,
+                // Event::KeyDown {
+                //     keycode: Some(Keycode::Right),
+                //     ..
+                // } => x += 10,
                 _ => {}
             }
         }
