@@ -23,6 +23,7 @@ pub struct Machine {
     i: u16,
     pixel_buffer: [[bool; NUM_COLS as usize]; NUM_ROWS as usize],
     stack: Vec<u16>,
+    key_is_pressed: [bool; 16],
 }
 
 impl Machine {
@@ -42,6 +43,7 @@ impl Machine {
             i: 0,
             pixel_buffer: [[false; NUM_COLS]; NUM_ROWS],
             stack: Vec::new(),
+            key_is_pressed: [false; 16],
         })
     }
 
@@ -246,6 +248,14 @@ impl Machine {
                 if self.registers[register_x as usize] != self.registers[register_y as usize] {
                     self.program_counter += 2;
                 }
+
+                return None;
+            }
+            Instruction::ShiftRegisterLeft { register_x, register_y } => {
+                let value_y = self.registers[register_y as usize];
+
+                self.registers[0xf] = value_y & (1 << 7);
+                self.registers[register_x as usize] = value_y.wrapping_mul(2);
 
                 return None;
             }

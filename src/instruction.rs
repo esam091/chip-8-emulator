@@ -89,6 +89,10 @@ pub enum Instruction {
     },
 
     // 8XYE
+    ShiftRegisterLeft {
+        register_x: u8,
+        register_y: u8,
+    },
 
     // 9XY0
     SkipIfRegistersNotEqual {
@@ -205,6 +209,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
         (0x8, register_x, register_y, 4) => Some(Instruction::AddRegisters { register_x, register_y }),
         (0x8, register_x, register_y, 5) => Some(Instruction::SubtractXMinusY { register_x, register_y }),
         (0x8, register_x, register_y, 7) => Some(Instruction::SubtractYMinusX { register_x, register_y }),
+        (0x8, register_x, register_y, 0xe) => Some(Instruction::ShiftRegisterLeft { register_x, register_y }),
         (0x9, register_x, register_y, 0) => Some(Instruction::SkipIfRegistersNotEqual { register_x, register_y }),
         (0xc, register, a, b) => Some(Instruction::SetRandomNumber {
             register,
@@ -332,7 +337,8 @@ mod tests {
                     register_x: 0xc,
                     register_y: 0xf,
                 }
-            )
+            ),
+            (0x8cae, Instruction::ShiftRegisterLeft { register_x: 0xc, register_y: 0xa }),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {
