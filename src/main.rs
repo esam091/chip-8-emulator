@@ -36,7 +36,7 @@ enum OpCode {
     // 3XNN
     SkipIfEqual {
         register: u8,
-        value: u16,
+        value: u8,
     },
 
     // 0NNN
@@ -49,7 +49,7 @@ enum OpCode {
     },
 }
 
-fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
+fn split_opcode(instruction: u16) -> (u8, u8, u8, u8) {
     let code1 = instruction & 0xf;
     let code2 = (instruction & 0x00f0) >> 4;
     let code3 = (instruction & 0x0f00) >> 8;
@@ -63,12 +63,8 @@ fn split_instruction(instruction: u16) -> (u8, u8, u8, u8) {
     );
 }
 
-fn combine_nibble2t(a: u8, b: u8) -> u8 {
+fn combine_nibble2(a: u8, b: u8) -> u8 {
     (a << 4) ^ b
-}
-
-fn combine_nibble2(a: u8, b: u8) -> u16 {
-    (a as u16) << 4 ^ (b as u16)
 }
 
 fn combine_nibble3(a: u8, b: u8, c: u8) -> u16 {
@@ -76,13 +72,13 @@ fn combine_nibble3(a: u8, b: u8, c: u8) -> u16 {
 }
 
 fn instruction_to_opcode(instruction: u16) -> Option<OpCode> {
-    match split_instruction(instruction) {
+    match split_opcode(instruction) {
         (0x0, 0x0, 0xe, 0x0) => Some(OpCode::ClearScreen),
         (0x0, a, b, c) => Some(OpCode::ExecuteSubroutine(combine_nibble3(a, b, c))),
         (0xa, a, b, c) => Some(OpCode::StoreAddrToI(combine_nibble3(a, b, c))),
         (0x6, register, a, b) => Some(OpCode::SetV {
             register,
-            value: combine_nibble2t(a, b),
+            value: combine_nibble2(a, b),
         }),
         (0xd, register_x, register_y, bytes) => Some(OpCode::Draw {
             register_x,
@@ -91,7 +87,7 @@ fn instruction_to_opcode(instruction: u16) -> Option<OpCode> {
         }),
         (0x7, register, a, b) => Some(OpCode::AddToRegister {
             register,
-            value: combine_nibble2t(a, b),
+            value: combine_nibble2(a, b),
         }),
         (0x1, a, b, c) => Some(OpCode::JumpToAddress(combine_nibble3(a, b, c))),
         (0x3, register, a, b) => Some(OpCode::SkipIfEqual {
@@ -340,8 +336,8 @@ mod tests {
     use super::*;
     #[test]
     fn split_test() {
-        assert_eq!(split_instruction(0xabcd), (0xa, 0xb, 0xc, 0xd));
-        assert_eq!(split_instruction(0x839a), (0x8, 0x3, 0x9, 0xa));
+        assert_eq!(split_opcode(0xabcd), (0xa, 0xb, 0xc, 0xd));
+        assert_eq!(split_opcode(0x839a), (0x8, 0x3, 0x9, 0xa));
     }
 
     #[test]
