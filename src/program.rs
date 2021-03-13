@@ -281,18 +281,20 @@ impl Machine {
                 return None;
             }
             Instruction::ShiftRegisterLeft { register_x, register_y } => {
-                let value_y = self.registers[register_y as usize];
+                // keypad test requires the CHIP48 behavior
+                let value_y = self.registers[register_x as usize];
 
                 self.registers[0xf] = value_y & (1 << 7);
-                self.registers[register_x as usize] = value_y.wrapping_mul(2);
+                self.registers[register_x as usize] <<= 1;
 
                 return None;
             }
             Instruction::ShiftRegisterRight { register_x, register_y } => {
-                let value_y = self.registers[register_y as usize];
+                // keypad test requires the CHIP48 behavior
+                let value_y = self.registers[register_x as usize];
 
                 self.registers[0xf] = value_y & 1;
-                self.registers[register_x as usize] = value_y / 2;
+                self.registers[register_x as usize]  >>= 1;
 
                 return None;
             }
@@ -300,6 +302,7 @@ impl Machine {
                 for register in 0 ..= final_register {
                     self.registers[register as usize] = self.memory[self.i as usize + register as usize];
                 }
+                // self.i += final_register as u16 + 1;
 
                 return None;
             }
@@ -308,6 +311,7 @@ impl Machine {
                     self.memory[self.i as usize + register as usize] = self.registers[register as usize];
                 }
 
+                // self.i += final_register as u16 + 1;
                 return None;
             }
             Instruction::SetIToFontLocation(register) => {
