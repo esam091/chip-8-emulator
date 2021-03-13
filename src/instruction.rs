@@ -126,6 +126,7 @@ pub enum Instruction {
     // EXA1
 
     // FX07
+    SetRegisterFromDelayTimer(u8),
 
     // FX0A
     HaltAndGetKey(u8),
@@ -233,6 +234,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
             mask: combine_nibble2(a, b),
         }),
         (0xf, register, 0x0, 0xa) => Some(Instruction::HaltAndGetKey(register)),
+        (0xf, register, 0x0, 0x7) => Some(Instruction::SetRegisterFromDelayTimer(register)),
         (0xf, register, 0x1, 0x5) => Some(Instruction::SetDelayTimerFromRegister(register)),
         (0xf, register, 0x1, 0xe) => Some(Instruction::AddRegisterToI(register)),
         (0xf, register, 0x2, 0x9) => Some(Instruction::SetIToFontLocation(register)),
@@ -366,6 +368,7 @@ mod tests {
             (0xf229, Instruction::SetIToFontLocation(0x02)),
             (0xf50a, Instruction::HaltAndGetKey(0x05)),
             (0xfb15, Instruction::SetDelayTimerFromRegister(0xb)),
+            (0xfe07, Instruction::SetRegisterFromDelayTimer(0xe)),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {

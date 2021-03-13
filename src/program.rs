@@ -337,6 +337,10 @@ impl Machine {
                 self.delay_timer = self.registers[register as usize];
                 return None;
             }
+            Instruction::SetRegisterFromDelayTimer(register) => { 
+                self.registers[register as usize] = self.delay_timer;
+                return None;
+            }
         }
     }
 
