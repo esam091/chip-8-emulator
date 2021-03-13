@@ -4,7 +4,7 @@ pub mod program;
 use std::env;
 use std::{convert::TryInto, time::Duration};
 
-use program::{Machine, NUM_COLS, NUM_ROWS, PixelBuffer};
+use program::{Machine, PixelBuffer, NUM_COLS, NUM_ROWS};
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas};
 
 use common_macros::hash_map;
@@ -19,12 +19,12 @@ fn draw_pixel_buffer(canvas: &mut WindowCanvas, pixel_buffer: &PixelBuffer) -> R
     for y in 0..NUM_ROWS {
         for x in 0..NUM_COLS {
             if pixel_buffer[y][x] {
-                let x = (x * 10).try_into().map_err(|value| {
-                    format!("Failed converting {} to i32", value)
-                })?;
-                let y = (y * 10).try_into().map_err(|value| {
-                    format!("Failed converting {} to i32", value)
-                })?;
+                let x = (x * 10)
+                    .try_into()
+                    .map_err(|value| format!("Failed converting {} to i32", value))?;
+                let y = (y * 10)
+                    .try_into()
+                    .map_err(|value| format!("Failed converting {} to i32", value))?;
 
                 canvas.fill_rect(Rect::new(x, y, 10, 10)).unwrap();
             }
@@ -68,7 +68,7 @@ fn main() -> Result<(), String> {
         Keycode::Down => 0x8,
         Keycode::Left => 0x4,
         Keycode::Up => 0x2,
-        
+
         Keycode::Num1 => 0x1,
         Keycode::Num2 => 0x2,
         Keycode::Num3 => 0x3,
@@ -87,7 +87,7 @@ fn main() -> Result<(), String> {
         Keycode::F => 0xe,
         Keycode::V => 0xf,
     };
-    
+
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
@@ -96,7 +96,7 @@ fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
-               
+
                 // TODO: handle key from 0 to F
                 Event::KeyDown {
                     keycode: Some(keycode),
@@ -105,7 +105,7 @@ fn main() -> Result<(), String> {
                     if let Some(key) = keyboard_mappings.get(&keycode) {
                         machine.key_press(*key);
                     }
-                },
+                }
 
                 Event::KeyUp {
                     keycode: Some(keycode),
@@ -123,7 +123,7 @@ fn main() -> Result<(), String> {
         machine.step();
 
         draw_pixel_buffer(&mut canvas, machine.get_pixel_buffer())?;
-        
+
         // ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
         ::std::thread::sleep(Duration::from_millis(17));
     }

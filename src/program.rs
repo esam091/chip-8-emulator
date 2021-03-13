@@ -29,7 +29,7 @@ fn copy_font_data(memory: &mut [u8; MEMORY_SIZE]) {
         0xF0, 0x80, 0x80, 0x80, 0xF0, // C
         0xE0, 0x90, 0x90, 0x90, 0xE0, // D
         0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-        0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+        0xF0, 0x80, 0xF0, 0x80, 0x80, // F
     ];
 
     for index in 0..font_data.len() {
@@ -49,7 +49,7 @@ pub struct Machine {
     pixel_buffer: PixelBuffer,
     stack: Vec<u16>,
     key_is_pressed: [bool; 16],
-    
+
     current_pressed_key: Option<u8>,
 }
 
@@ -192,7 +192,6 @@ impl Machine {
             Instruction::SetRandomNumber { register, mask } => {
                 let value = fastrand::u8(..) & mask;
                 self.registers[register as usize] = value;
-
             }
             Instruction::SkipIfRegistersEqual {
                 register_x,
@@ -201,21 +200,18 @@ impl Machine {
                 if self.registers[register_x as usize] == self.registers[register_y as usize] {
                     self.program_counter += 2;
                 }
-
             }
             Instruction::OrRegisters {
                 register_x,
                 register_y,
             } => {
                 self.registers[register_x as usize] |= self.registers[register_y as usize];
-
             }
             Instruction::AndRegisters {
                 register_x,
                 register_y,
             } => {
                 self.registers[register_x as usize] &= self.registers[register_y as usize];
-
             }
             Instruction::XorRegisters {
                 register_x,
@@ -223,62 +219,79 @@ impl Machine {
             } => {
                 self.registers[register_x as usize] ^= self.registers[register_y as usize];
             }
-            Instruction::AddRegisters { register_x, register_y } => { 
+            Instruction::AddRegisters {
+                register_x,
+                register_y,
+            } => {
                 let value_x = self.registers[register_x as usize];
                 let value_y = self.registers[register_y as usize];
 
-                self.registers[0xf] = if value_x.checked_add(value_y) == None { 1 } else { 0 };
+                self.registers[0xf] = if value_x.checked_add(value_y) == None {
+                    1
+                } else {
+                    0
+                };
                 self.registers[register_x as usize] = value_x.wrapping_add(value_y);
-                
             }
-            Instruction::SubtractXMinusY { register_x, register_y } => {
+            Instruction::SubtractXMinusY {
+                register_x,
+                register_y,
+            } => {
                 let value_x = self.registers[register_x as usize];
                 let value_y = self.registers[register_y as usize];
 
                 self.registers[0xf] = if value_x >= value_y { 1 } else { 0 };
                 self.registers[register_x as usize] = value_x.wrapping_sub(value_y);
-
             }
-            Instruction::SubtractYMinusX { register_x, register_y } => {
+            Instruction::SubtractYMinusX {
+                register_x,
+                register_y,
+            } => {
                 let value_x = self.registers[register_x as usize];
                 let value_y = self.registers[register_y as usize];
 
                 self.registers[0xf] = if value_y >= value_x { 1 } else { 0 };
                 self.registers[register_x as usize] = value_y.wrapping_sub(value_x);
-
             }
-            Instruction::SkipIfRegistersNotEqual { register_x, register_y } => {
+            Instruction::SkipIfRegistersNotEqual {
+                register_x,
+                register_y,
+            } => {
                 if self.registers[register_x as usize] != self.registers[register_y as usize] {
                     self.program_counter += 2;
                 }
-
             }
-            Instruction::ShiftRegisterLeft { register_x, register_y } => {
+            Instruction::ShiftRegisterLeft {
+                register_x,
+                register_y,
+            } => {
                 // keypad test requires the CHIP48 behavior
                 let value_y = self.registers[register_x as usize];
 
                 self.registers[0xf] = value_y & (1 << 7);
                 self.registers[register_x as usize] <<= 1;
-
             }
-            Instruction::ShiftRegisterRight { register_x, register_y } => {
+            Instruction::ShiftRegisterRight {
+                register_x,
+                register_y,
+            } => {
                 // keypad test requires the CHIP48 behavior
                 let value_y = self.registers[register_x as usize];
 
                 self.registers[0xf] = value_y & 1;
-                self.registers[register_x as usize]  >>= 1;
-
+                self.registers[register_x as usize] >>= 1;
             }
-            Instruction::LoadRegisters(final_register) => {  
-                for register in 0 ..= final_register {
-                    self.registers[register as usize] = self.memory[self.i as usize + register as usize];
+            Instruction::LoadRegisters(final_register) => {
+                for register in 0..=final_register {
+                    self.registers[register as usize] =
+                        self.memory[self.i as usize + register as usize];
                 }
                 // self.i += final_register as u16 + 1;
-
             }
             Instruction::SaveRegisters(final_register) => {
-                for register in 0 ..= final_register {
-                    self.memory[self.i as usize + register as usize] = self.registers[register as usize];
+                for register in 0..=final_register {
+                    self.memory[self.i as usize + register as usize] =
+                        self.registers[register as usize];
                 }
 
                 // self.i += final_register as u16 + 1;
@@ -286,19 +299,15 @@ impl Machine {
             Instruction::SetIToFontLocation(register) => {
                 let font_character = self.registers[register as usize] as u16;
                 self.i = FONT_STARTING_ADDRESS as u16 + 5 * font_character;
-
             }
-            Instruction::HaltAndGetKey(register) => { 
-                match self.current_pressed_key {
-                    None => self.program_counter -= 2,
-                    Some(key) => self.registers[register as usize] = key
-                }
-
-            }
-            Instruction::SetDelayTimerFromRegister(register) => { 
+            Instruction::HaltAndGetKey(register) => match self.current_pressed_key {
+                None => self.program_counter -= 2,
+                Some(key) => self.registers[register as usize] = key,
+            },
+            Instruction::SetDelayTimerFromRegister(register) => {
                 self.delay_timer = self.registers[register as usize];
             }
-            Instruction::SetRegisterFromDelayTimer(register) => { 
+            Instruction::SetRegisterFromDelayTimer(register) => {
                 self.registers[register as usize] = self.delay_timer;
             }
         }
@@ -331,5 +340,5 @@ impl Machine {
 
     pub fn get_pixel_buffer(&self) -> &PixelBuffer {
         &self.pixel_buffer
-    }    
+    }
 }
