@@ -338,6 +338,9 @@ impl Machine {
                     self.program_counter += 2;
                 }
             }
+            Instruction::JumpWithOffset(offset) => {
+                self.program_counter = offset + self.registers[0x0] as u16;
+            }
         }
     }
 

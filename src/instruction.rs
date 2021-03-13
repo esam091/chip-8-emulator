@@ -108,6 +108,7 @@ pub enum Instruction {
     StoreAddrToI(u16),
 
     // BNNN
+    JumpWithOffset(u16),
 
     // CXNN
     SetRandomNumber {
@@ -252,6 +253,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
             register_x,
             register_y,
         }),
+        (0xb, a, b, c) => Some(Instruction::JumpWithOffset(combine_nibble3(a, b, c))),
         (0xc, register, a, b) => Some(Instruction::SetRandomNumber {
             register,
             mask: combine_nibble2(a, b),
@@ -412,6 +414,7 @@ mod tests {
             (0xf333, Instruction::BinaryRepresentationFromRegister(0x3)),
             (0xe29e, Instruction::SkipIfPressedKeyContainsRegisterValue(0x2)),
             (0xe8a1, Instruction::SkipIfPressedKeyDoesNotContainsRegisterValue(0x8)),
+            (0xbabc, Instruction::JumpWithOffset(0xabc)),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {
