@@ -135,6 +135,7 @@ pub enum Instruction {
     SetDelayTimerFromRegister(u8),
 
     // FX18
+    SetSoundTimerFromRegister(u8),
 
     // FX1E
     AddRegisterToI(u8),
@@ -254,6 +255,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
         (0xf, register, 0x0, 0xa) => Some(Instruction::HaltAndGetKey(register)),
         (0xf, register, 0x0, 0x7) => Some(Instruction::SetRegisterFromDelayTimer(register)),
         (0xf, register, 0x1, 0x5) => Some(Instruction::SetDelayTimerFromRegister(register)),
+        (0xf, register, 0x1, 0x8) => Some(Instruction::SetSoundTimerFromRegister(register)),
         (0xf, register, 0x1, 0xe) => Some(Instruction::AddRegisterToI(register)),
         (0xf, register, 0x2, 0x9) => Some(Instruction::SetIToFontLocation(register)),
         (0xf, register, 0x5, 0x5) => Some(Instruction::SaveRegisters(register)),
@@ -399,6 +401,7 @@ mod tests {
             (0xf50a, Instruction::HaltAndGetKey(0x05)),
             (0xfb15, Instruction::SetDelayTimerFromRegister(0xb)),
             (0xfe07, Instruction::SetRegisterFromDelayTimer(0xe)),
+            (0xfe18, Instruction::SetSoundTimerFromRegister(0xe)),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {

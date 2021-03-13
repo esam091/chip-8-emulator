@@ -1,6 +1,6 @@
 #[path = "./instruction.rs"]
 mod instruction;
-use std::{cmp::max, fs};
+use std::fs;
 
 use instruction::{parse_opcode, Instruction};
 
@@ -45,10 +45,10 @@ pub struct Machine {
 
     registers: [u8; 16],
     delay_timer: u8,
+    sound_timer: u8,
     i: u16,
     pixel_buffer: PixelBuffer,
     stack: Vec<u16>,
-    key_is_pressed: [bool; 16],
 
     current_pressed_key: Option<u8>,
 }
@@ -72,9 +72,9 @@ impl Machine {
             i: 0,
             pixel_buffer: [[false; NUM_COLS]; NUM_ROWS],
             stack: Vec::new(),
-            key_is_pressed: [false; 16],
             current_pressed_key: None,
             delay_timer: 0,
+            sound_timer: 0,
         })
     }
 
@@ -263,7 +263,7 @@ impl Machine {
             }
             Instruction::ShiftRegisterLeft {
                 register_x,
-                register_y,
+                register_y: _,
             } => {
                 // keypad test requires the CHIP48 behavior
                 let value_y = self.registers[register_x as usize];
@@ -273,7 +273,7 @@ impl Machine {
             }
             Instruction::ShiftRegisterRight {
                 register_x,
-                register_y,
+                register_y: _,
             } => {
                 // keypad test requires the CHIP48 behavior
                 let value_y = self.registers[register_x as usize];
@@ -310,6 +310,9 @@ impl Machine {
             Instruction::SetRegisterFromDelayTimer(register) => {
                 self.registers[register as usize] = self.delay_timer;
             }
+            Instruction::SetSoundTimerFromRegister(register) => {
+                self.sound_timer = self.registers[register as usize];
+            }
         }
     }
 
@@ -324,6 +327,7 @@ impl Machine {
         println!("instruction: {:#04x?}, opcode {:02x?}", opcode, instruction);
 
         self.delay_timer = self.delay_timer.checked_sub(1).unwrap_or(0);
+        self.sound_timer = self.sound_timer.checked_sub(1).unwrap_or(0);
 
         instruction
             .map(move |instruction| self.handle_instruction(instruction))
@@ -334,11 +338,15 @@ impl Machine {
         self.current_pressed_key = Some(key);
     }
 
-    pub fn key_release(&mut self, key: u8) {
+    pub fn key_release(&mut self, _key: u8) {
         self.current_pressed_key = None;
     }
 
     pub fn get_pixel_buffer(&self) -> &PixelBuffer {
         &self.pixel_buffer
+    }
+
+    pub fn should_beep(&self) -> bool {
+        return self.sound_timer > 0;
     }
 }
