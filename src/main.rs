@@ -5,7 +5,14 @@ use std::env;
 use std::{convert::TryInto, time::Duration};
 
 use program::{Machine, PixelBuffer, NUM_COLS, NUM_ROWS};
-use sdl2::{audio::{self, AudioCallback, AudioSpecDesired}, event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas};
+use sdl2::{
+    audio::{self, AudioCallback, AudioSpecDesired},
+    event::Event,
+    keyboard::Keycode,
+    pixels::Color,
+    rect::Rect,
+    render::WindowCanvas,
+};
 
 use common_macros::hash_map;
 
@@ -14,7 +21,7 @@ const SCALE: u32 = 10;
 struct SquareWave {
     phase_inc: f32,
     phase: f32,
-    volume: f32
+    volume: f32,
 }
 
 impl AudioCallback for SquareWave {
@@ -71,17 +78,17 @@ fn main() -> Result<(), String> {
 
     let desired_spec = AudioSpecDesired {
         freq: Some(44100),
-        channels: Some(1),  // mono
-        samples: None       // default sample size
+        channels: Some(1), // mono
+        samples: Some(16), // default sample size
     };
 
-    let audio_device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
-        SquareWave {
+    let audio_device = audio_subsystem
+        .open_playback(None, &desired_spec, |spec| SquareWave {
             phase_inc: 440.0 / spec.freq as f32,
             phase: 0.0,
-            volume: 0.25
-        }
-    }).unwrap();
+            volume: 0.25,
+        })
+        .unwrap();
 
     let window = video_subsystem
         .window(
