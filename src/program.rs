@@ -1,6 +1,6 @@
 #[path = "./instruction.rs"]
 mod instruction;
-use std::fs;
+use std::{cmp::max, fs};
 
 use instruction::{parse_opcode, Instruction};
 
@@ -47,6 +47,7 @@ pub struct Machine {
     program_counter: u16,
 
     registers: [u8; 16],
+    delay_timer: u8,
     i: u16,
     pixel_buffer: [[bool; NUM_COLS as usize]; NUM_ROWS as usize],
     stack: Vec<u16>,
@@ -76,6 +77,7 @@ impl Machine {
             stack: Vec::new(),
             key_is_pressed: [false; 16],
             current_pressed_key: None,
+            delay_timer: 0,
         })
     }
 
@@ -331,6 +333,10 @@ impl Machine {
 
                 return None;
             }
+            Instruction::SetDelayTimerFromRegister(register) => { 
+                self.delay_timer = self.registers[register as usize];
+                return None;
+            }
         }
     }
 
@@ -343,6 +349,8 @@ impl Machine {
         let instruction = parse_opcode(opcode);
         self.program_counter += 2;
         println!("instruction: {:#04x?}, opcode {:02x?}", opcode, instruction);
+
+        self.delay_timer = self.delay_timer.checked_sub(1).unwrap_or(0);
 
         return instruction
             .map(move |instruction| self.handle_instruction(instruction))
