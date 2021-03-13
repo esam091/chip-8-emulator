@@ -42,6 +42,8 @@ pub enum UIAction<'a> {
     Draw(&'a [[bool; 64]; 32]),
 }
 
+pub type PixelBuffer = [[bool; NUM_COLS as usize]; NUM_ROWS as usize];
+
 pub struct Machine {
     memory: [u8; MEMORY_SIZE],
     program_counter: u16,
@@ -49,7 +51,7 @@ pub struct Machine {
     registers: [u8; 16],
     delay_timer: u8,
     i: u16,
-    pixel_buffer: [[bool; NUM_COLS as usize]; NUM_ROWS as usize],
+    pixel_buffer: PixelBuffer,
     stack: Vec<u16>,
     key_is_pressed: [bool; 16],
     
@@ -368,4 +370,8 @@ impl Machine {
     pub fn key_release(&mut self, key: u8) {
         self.current_pressed_key = None;
     }
+
+    pub fn get_pixel_buffer(&self) -> &PixelBuffer {
+        &self.pixel_buffer
+    }    
 }

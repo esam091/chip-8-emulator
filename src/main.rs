@@ -4,12 +4,37 @@ pub mod program;
 use std::{collections::hash_map, env};
 use std::{convert::TryInto, time::Duration};
 
-use program::{Machine, UIAction, NUM_COLS, NUM_ROWS};
-use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
+use program::{Machine, NUM_COLS, NUM_ROWS, PixelBuffer, UIAction};
+use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas};
 
 use common_macros::hash_map;
 
 const SCALE: u32 = 10;
+
+fn draw_pixel_buffer(canvas: &mut WindowCanvas, pixel_buffer: &PixelBuffer) -> Result<(), String> {
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas.clear();
+
+    canvas.set_draw_color(Color::RGB(255, 255, 255));
+    for y in 0..NUM_ROWS {
+        for x in 0..NUM_COLS {
+            if pixel_buffer[y][x] {
+                let x = (x * 10).try_into().map_err(|value| {
+                    format!("Failed converting {} to i32", value)
+                })?;
+                let y = (y * 10).try_into().map_err(|value| {
+                    format!("Failed converting {} to i32", value)
+                })?;
+
+                canvas.fill_rect(Rect::new(x, y, 10, 10)).unwrap();
+            }
+        }
+    }
+
+    canvas.present();
+
+    Ok(())
+}
 
 fn main() -> Result<(), String> {
     let args: Vec<String> = env::args().collect();
@@ -62,8 +87,6 @@ fn main() -> Result<(), String> {
         Keycode::F => 0xe,
         Keycode::V => 0xf,
     };
-
-    
     
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -97,39 +120,10 @@ fn main() -> Result<(), String> {
             }
         }
 
-        if let Some(ui_action) = machine.step() {
-            match ui_action {
-                UIAction::ClearScreen => {
-                    canvas.set_draw_color(Color::RGB(0, 0, 0));
-                    canvas.clear();
-                }
+        machine.step();
 
-                UIAction::Draw(pixel_buffer) => {
-                    canvas.set_draw_color(Color::RGB(0, 0, 0));
-                    canvas.clear();
-
-                    canvas.set_draw_color(Color::RGB(255, 255, 255));
-                    for y in 0..NUM_ROWS {
-                        for x in 0..NUM_COLS {
-                            if pixel_buffer[y][x] {
-                                let x = (x * 10).try_into().map_err(|value| {
-                                    format!("Failed converting {} to i32", value)
-                                })?;
-                                let y = (y * 10).try_into().map_err(|value| {
-                                    format!("Failed converting {} to i32", value)
-                                })?;
-
-                                canvas.fill_rect(Rect::new(x, y, 10, 10)).unwrap();
-                            }
-                        }
-                    }
-
-                    canvas.present();
-                }
-            }
-        }
-
-        canvas.present();
+        draw_pixel_buffer(&mut canvas, machine.get_pixel_buffer())?;
+        
         // ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
         ::std::thread::sleep(Duration::from_millis(17));
     }
