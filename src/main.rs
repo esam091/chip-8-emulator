@@ -36,8 +36,6 @@ fn main() -> Result<(), String> {
     canvas.present();
     let mut event_pump = sdl_context.event_pump().unwrap();
 
-    // let aa = &mut program;
-
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
@@ -46,10 +44,22 @@ fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
-                // Event::KeyDown {
-                //     keycode: Some(Keycode::Right),
-                //     ..
-                // } => x += 10,
+               
+                // TODO: handle key from 0 to F
+                Event::KeyDown {
+                    keycode: Some(Keycode::Right),
+                    ..
+                } => {
+                    machine.key_press(0x6);
+                },
+
+                Event::KeyUp {
+                    keycode: Some(Keycode::Right),
+                    ..
+                } => {
+                    machine.key_release(0x6);
+                }
+
                 _ => {}
             }
         }
@@ -88,7 +98,7 @@ fn main() -> Result<(), String> {
 
         canvas.present();
         // ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
-        ::std::thread::sleep(Duration::from_millis(200));
+        ::std::thread::sleep(Duration::from_millis(17));
     }
 
     Ok(())

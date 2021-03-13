@@ -51,6 +51,8 @@ pub struct Machine {
     pixel_buffer: [[bool; NUM_COLS as usize]; NUM_ROWS as usize],
     stack: Vec<u16>,
     key_is_pressed: [bool; 16],
+    
+    current_pressed_key: Option<u8>,
 }
 
 impl Machine {
@@ -73,6 +75,7 @@ impl Machine {
             pixel_buffer: [[false; NUM_COLS]; NUM_ROWS],
             stack: Vec::new(),
             key_is_pressed: [false; 16],
+            current_pressed_key: None,
         })
     }
 
@@ -320,6 +323,14 @@ impl Machine {
 
                 return None;
             }
+            Instruction::HaltAndGetKey(register) => { 
+                match self.current_pressed_key {
+                    None => self.program_counter -= 2,
+                    Some(key) => self.registers[register as usize] = key
+                }
+
+                return None;
+            }
         }
     }
 
@@ -336,5 +347,13 @@ impl Machine {
         return instruction
             .map(move |instruction| self.handle_instruction(instruction))
             .expect(format!("Failed to translate opcode: {:#02x?}, either the opcode is not supported yet, or there is a bug in the interpreter", opcode).as_str());
+    }
+
+    pub fn key_press(&mut self, key: u8) {
+        self.current_pressed_key = Some(key);
+    }
+
+    pub fn key_release(&mut self, key: u8) {
+        self.current_pressed_key = None;
     }
 }

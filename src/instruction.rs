@@ -126,7 +126,10 @@ pub enum Instruction {
     // EXA1
 
     // FX07
+
     // FX0A
+    HaltAndGetKey(u8),
+
     // FX15
     // FX18
 
@@ -227,6 +230,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
             register,
             mask: combine_nibble2(a, b),
         }),
+        (0xf, register, 0x0, 0xa) => Some(Instruction::HaltAndGetKey(register)),
         (0xf, register, 0x1, 0xe) => Some(Instruction::AddRegisterToI(register)),
         (0xf, register, 0x2, 0x9) => Some(Instruction::SetIToFontLocation(register)),
         (0xf, register, 0x5, 0x5) => Some(Instruction::SaveRegisters(register)),
@@ -357,6 +361,7 @@ mod tests {
             (0xf165, Instruction::LoadRegisters(0x1)),
             (0xfb55, Instruction::SaveRegisters(0xb)),
             (0xf229, Instruction::SetIToFontLocation(0x02)),
+            (0xf50a, Instruction::HaltAndGetKey(0x05)),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {
