@@ -331,6 +331,13 @@ impl Machine {
                     self.program_counter += 2;
                 }
             }
+            Instruction::SkipIfPressedKeyDoesNotContainsRegisterValue(register) => {
+                let value = self.registers[register as usize];
+
+                if self.current_pressed_key != Some(value) {
+                    self.program_counter += 2;
+                }
+            }
         }
     }
 
