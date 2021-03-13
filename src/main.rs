@@ -1,10 +1,10 @@
 pub mod instruction;
 pub mod program;
 
-use std::{collections::hash_map, env};
+use std::env;
 use std::{convert::TryInto, time::Duration};
 
-use program::{Machine, NUM_COLS, NUM_ROWS, PixelBuffer, UIAction};
+use program::{Machine, NUM_COLS, NUM_ROWS, PixelBuffer};
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas};
 
 use common_macros::hash_map;
