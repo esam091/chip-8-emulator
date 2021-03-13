@@ -1,11 +1,13 @@
 pub mod instruction;
 pub mod program;
 
-use std::env;
+use std::{collections::hash_map, env};
 use std::{convert::TryInto, time::Duration};
 
 use program::{Machine, UIAction, NUM_COLS, NUM_ROWS};
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
+
+use common_macros::hash_map;
 
 const SCALE: u32 = 10;
 
@@ -36,6 +38,33 @@ fn main() -> Result<(), String> {
     canvas.present();
     let mut event_pump = sdl_context.event_pump().unwrap();
 
+    let keyboard_mappings = hash_map! {
+        Keycode::Right => 0x6u8,
+        Keycode::Down => 0x8,
+        Keycode::Left => 0x4,
+        Keycode::Up => 0x2,
+        
+        Keycode::Num1 => 0x1,
+        Keycode::Num2 => 0x2,
+        Keycode::Num3 => 0x3,
+        Keycode::Q => 0x4,
+        Keycode::W => 0x5,
+        Keycode::E => 0x6,
+        Keycode::A => 0x7,
+        Keycode::S => 0x8,
+        Keycode::D => 0x9,
+        Keycode::X => 0x0,
+
+        Keycode::Z => 0xa,
+        Keycode::C => 0xb,
+        Keycode::Num4 => 0xc,
+        Keycode::R => 0xd,
+        Keycode::F => 0xe,
+        Keycode::V => 0xf,
+    };
+
+    
+    
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
@@ -47,17 +76,21 @@ fn main() -> Result<(), String> {
                
                 // TODO: handle key from 0 to F
                 Event::KeyDown {
-                    keycode: Some(Keycode::Right),
+                    keycode: Some(keycode),
                     ..
                 } => {
-                    machine.key_press(0x6);
+                    if let Some(key) = keyboard_mappings.get(&keycode) {
+                        machine.key_press(*key);
+                    }
                 },
 
                 Event::KeyUp {
-                    keycode: Some(Keycode::Right),
+                    keycode: Some(keycode),
                     ..
                 } => {
-                    machine.key_release(0x6);
+                    if let Some(key) = keyboard_mappings.get(&keycode) {
+                        machine.key_release(*key);
+                    }
                 }
 
                 _ => {}
