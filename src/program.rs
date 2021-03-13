@@ -313,6 +313,17 @@ impl Machine {
             Instruction::SetSoundTimerFromRegister(register) => {
                 self.sound_timer = self.registers[register as usize];
             }
+            Instruction::BinaryRepresentationFromRegister(register) => {
+                let mut value = self.registers[register as usize];
+
+                self.memory[self.i as usize + 2] = value % 10;
+                value /= 10;
+
+                self.memory[self.i as usize + 1] = value % 10;
+                value /= 10;
+
+                self.memory[self.i as usize] = value;
+            }
         }
     }
 

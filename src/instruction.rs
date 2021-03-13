@@ -144,6 +144,7 @@ pub enum Instruction {
     SetIToFontLocation(u8),
 
     // FX33
+    BinaryRepresentationFromRegister(u8),
 
     // FX55
     SaveRegisters(u8),
@@ -258,6 +259,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
         (0xf, register, 0x1, 0x8) => Some(Instruction::SetSoundTimerFromRegister(register)),
         (0xf, register, 0x1, 0xe) => Some(Instruction::AddRegisterToI(register)),
         (0xf, register, 0x2, 0x9) => Some(Instruction::SetIToFontLocation(register)),
+        (0xf, register, 0x3, 0x3) => Some(Instruction::BinaryRepresentationFromRegister(register)),
         (0xf, register, 0x5, 0x5) => Some(Instruction::SaveRegisters(register)),
         (0xf, register, 0x6, 0x5) => Some(Instruction::LoadRegisters(register)),
         _ => None,
@@ -402,6 +404,7 @@ mod tests {
             (0xfb15, Instruction::SetDelayTimerFromRegister(0xb)),
             (0xfe07, Instruction::SetRegisterFromDelayTimer(0xe)),
             (0xfe18, Instruction::SetSoundTimerFromRegister(0xe)),
+            (0xf333, Instruction::BinaryRepresentationFromRegister(0x3)),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {
