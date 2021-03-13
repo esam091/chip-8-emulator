@@ -9,6 +9,33 @@ pub const NUM_COLS: usize = 64;
 
 const MEMORY_SIZE: usize = 4096;
 const PROGRAM_STARTING_ADDRESS: u16 = 512;
+const FONT_STARTING_ADDRESS: usize = 0x50;
+const FONT_BYTES: u32 = 5;
+
+fn copy_font_data(memory: &mut [u8; MEMORY_SIZE]) {
+    let font_data: Vec<u8> = vec![
+        0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+        0x20, 0x60, 0x20, 0x20, 0x70, // 1
+        0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+        0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+        0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+        0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+        0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+        0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+        0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+        0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+        0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+        0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+        0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+        0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+        0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+        0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+    ];
+
+    for index in 0..font_data.len() {
+        memory[FONT_STARTING_ADDRESS + index] = font_data[index];
+    }
+}
 
 pub enum UIAction<'a> {
     ClearScreen,
@@ -35,6 +62,8 @@ impl Machine {
         for index in 0..bytes.len() {
             memory[PROGRAM_STARTING_ADDRESS as usize + index] = bytes[index];
         }
+
+        copy_font_data(&mut memory);
 
         Ok(Machine {
             memory,
@@ -278,6 +307,12 @@ impl Machine {
                 for register in 0 ..= final_register {
                     self.memory[self.i as usize + register as usize] = self.registers[register as usize];
                 }
+
+                return None;
+            }
+            Instruction::SetIToFontLocation(register) => {
+                let font_character = self.registers[register as usize] as u16;
+                self.i = FONT_STARTING_ADDRESS as u16 + 5 * font_character;
 
                 return None;
             }
