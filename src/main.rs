@@ -5,11 +5,33 @@ use std::env;
 use std::{convert::TryInto, time::Duration};
 
 use program::{Machine, PixelBuffer, NUM_COLS, NUM_ROWS};
-use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas};
+use sdl2::{audio::{self, AudioCallback, AudioSpecDesired}, event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas};
 
 use common_macros::hash_map;
 
 const SCALE: u32 = 10;
+
+struct SquareWave {
+    phase_inc: f32,
+    phase: f32,
+    volume: f32
+}
+
+impl AudioCallback for SquareWave {
+    type Channel = f32;
+
+    fn callback(&mut self, out: &mut [f32]) {
+        // Generate a square wave
+        for x in out.iter_mut() {
+            *x = if self.phase <= 0.5 {
+                self.volume
+            } else {
+                -self.volume
+            };
+            self.phase = (self.phase + self.phase_inc) % 1.0;
+        }
+    }
+}
 
 fn draw_pixel_buffer(canvas: &mut WindowCanvas, pixel_buffer: &PixelBuffer) -> Result<(), String> {
     canvas.set_draw_color(Color::RGB(0, 0, 0));
@@ -45,6 +67,21 @@ fn main() -> Result<(), String> {
 
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
+    let audio_subsystem = sdl_context.audio().unwrap();
+
+    let desired_spec = AudioSpecDesired {
+        freq: Some(44100),
+        channels: Some(1),  // mono
+        samples: None       // default sample size
+    };
+
+    let audio_device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
+        SquareWave {
+            phase_inc: 440.0 / spec.freq as f32,
+            phase: 0.0,
+            volume: 0.25
+        }
+    }).unwrap();
 
     let window = video_subsystem
         .window(
@@ -125,7 +162,9 @@ fn main() -> Result<(), String> {
         draw_pixel_buffer(&mut canvas, machine.get_pixel_buffer())?;
 
         if machine.should_beep() {
-            println!("beep!");
+            audio_device.resume();
+        } else {
+            audio_device.pause();
         }
 
         // ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
