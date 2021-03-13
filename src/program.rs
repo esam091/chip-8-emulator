@@ -10,7 +10,7 @@ pub const NUM_COLS: usize = 64;
 const MEMORY_SIZE: usize = 4096;
 const PROGRAM_STARTING_ADDRESS: u16 = 512;
 const FONT_STARTING_ADDRESS: usize = 0x50;
-const FONT_BYTES: u32 = 5;
+const FONT_BYTES: u16 = 5;
 
 fn copy_font_data(memory: &mut [u8; MEMORY_SIZE]) {
     let font_data: Vec<u8> = vec![
@@ -298,7 +298,7 @@ impl Machine {
             }
             Instruction::SetIToFontLocation(register) => {
                 let font_character = self.registers[register as usize] as u16;
-                self.i = FONT_STARTING_ADDRESS as u16 + 5 * font_character;
+                self.i = FONT_STARTING_ADDRESS as u16 + FONT_BYTES * font_character;
             }
             Instruction::HaltAndGetKey(register) => match self.current_pressed_key {
                 None => self.program_counter -= 2,

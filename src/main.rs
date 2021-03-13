@@ -6,7 +6,7 @@ use std::{convert::TryInto, time::Duration};
 
 use program::{Machine, PixelBuffer, NUM_COLS, NUM_ROWS};
 use sdl2::{
-    audio::{self, AudioCallback, AudioSpecDesired},
+    audio::{AudioCallback, AudioSpecDesired},
     event::Event,
     keyboard::Keycode,
     pixels::Color,
