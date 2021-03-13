@@ -123,6 +123,8 @@ pub enum Instruction {
     },
 
     // EX9E
+    SkipIfPressedKeyContainsRegisterValue(u8),
+
     // EXA1
 
     // FX07
@@ -253,6 +255,7 @@ pub fn parse_opcode(instruction: u16) -> Option<Instruction> {
             register,
             mask: combine_nibble2(a, b),
         }),
+        (0xe, register, 0x9, 0xe) => Some(Instruction::SkipIfPressedKeyContainsRegisterValue(register)),
         (0xf, register, 0x0, 0xa) => Some(Instruction::HaltAndGetKey(register)),
         (0xf, register, 0x0, 0x7) => Some(Instruction::SetRegisterFromDelayTimer(register)),
         (0xf, register, 0x1, 0x5) => Some(Instruction::SetDelayTimerFromRegister(register)),
@@ -405,6 +408,7 @@ mod tests {
             (0xfe07, Instruction::SetRegisterFromDelayTimer(0xe)),
             (0xfe18, Instruction::SetSoundTimerFromRegister(0xe)),
             (0xf333, Instruction::BinaryRepresentationFromRegister(0x3)),
+            (0xe29e, Instruction::SkipIfPressedKeyContainsRegisterValue(0x2)),
         ];
 
         for (instruction, opcode) in instructions_and_opcodes {

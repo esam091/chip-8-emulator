@@ -324,6 +324,13 @@ impl Machine {
 
                 self.memory[self.i as usize] = value;
             }
+            Instruction::SkipIfPressedKeyContainsRegisterValue(register) => {
+                let value = self.registers[register as usize];
+
+                if self.current_pressed_key == Some(value) {
+                    self.program_counter += 2;
+                }
+            }
         }
     }
 
